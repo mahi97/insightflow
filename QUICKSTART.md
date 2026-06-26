@@ -178,4 +178,4 @@ Repeat until your claims reach `supported` or `refuted` with sufficient evidence
 - [README.md](README.md) — full CLI reference, config schema, agent workflow, and limitations
 - [AGENTS.md](AGENTS.md) — rules for operating InsightFlow as an AI agent
 - [CLAUDE.md](CLAUDE.md) — Claude Code-specific guidance
-- `.claude/skills/adaptive-experiment-scheduler/` — Claude Code skill for the adaptive scheduling workflow
+- `skills/adaptive-experiment-scheduler/` — Claude Code skill for the adaptive scheduling workflow

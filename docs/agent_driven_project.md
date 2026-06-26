@@ -163,4 +163,4 @@ uv run insightflow plan             # replan; did C1's status change?
 
 See also: [agent_workflow.md](agent_workflow.md) (the human-in-the-loop version),
 [scheduling_policy.md](scheduling_policy.md), and the
-`adaptive-experiment-scheduler` skill in `.claude/skills/`.
+`adaptive-experiment-scheduler` skill in `skills/`.

@@ -1,0 +1,14 @@
+{
+  "name": "insightflow",
+  "owner": { "name": "InsightFlow contributors" },
+  "metadata": {
+    "description": "Adaptive experiment scheduling for ML research — install the InsightFlow agent skills, guard hook, and slash commands."
+  },
+  "plugins": [
+    {
+      "name": "insightflow",
+      "source": "./",
+      "description": "Skills (adaptive-experiment-scheduler, define-claims, interpret-results, writeup-from-ledger), a guard hook, and /insightflow-* commands that drive the InsightFlow CLI."
+    }
+  ]
+}

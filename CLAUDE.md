@@ -27,7 +27,7 @@ The deterministic CLI + ledger are the **source of truth**. Claude is the
   v0.1 is advisor mode — recommend, don't execute.
 
 There is an `adaptive-experiment-scheduler` skill in
-`.claude/skills/` and a `guard_expensive_runs.py` PreToolUse hook in
+`skills/` and a `guard_expensive_runs.py` PreToolUse hook in
 `.claude/hooks/` that enforce these habits.
 
 ## When developing the codebase

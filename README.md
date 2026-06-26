@@ -358,7 +358,7 @@ See [docs/wandb.md](docs/wandb.md) when available for the full import/linking wo
 
 InsightFlow is designed to be driven by a Claude Code agent following the rules in [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md).
 
-The `.claude/skills/adaptive-experiment-scheduler` skill teaches Claude Code the correct workflow:
+The `skills/adaptive-experiment-scheduler` skill teaches Claude Code the correct workflow:
 
 1. Always call `uv run insightflow state` before making any scheduling recommendation — never invent state.
 2. Always call `uv run insightflow plan` before proposing new runs.
@@ -392,7 +392,17 @@ The following are **not yet built**:
 - **Slurm / Ray launchers**: InsightFlow recommends; humans or scripts launch.
 - **Bayesian / Value-of-Information scoring**: the current confidence model is a deterministic heuristic. Bayesian VOI scoring is planned for v0.2 (see [docs/concepts.md](docs/concepts.md)).
 - **Offline replay on real experiment logs**: not yet implemented.
-- **`docs/` files**: architecture.md, concepts.md, scheduling_policy.md, wandb.md, agent_workflow.md, roadmap.md are referenced in the codebase but not yet written.
+Documentation (`docs/`): [install_and_use.md](docs/install_and_use.md),
+[architecture.md](docs/architecture.md), [concepts.md](docs/concepts.md),
+[scheduling_policy.md](docs/scheduling_policy.md), [wandb.md](docs/wandb.md),
+[agent_workflow.md](docs/agent_workflow.md),
+[agent_driven_project.md](docs/agent_driven_project.md), and
+[roadmap.md](docs/roadmap.md).
+
+Install as a Claude Code plugin (skills + guard hook + `/insightflow-*` commands):
+`claude plugin marketplace add insightflow/insightflow` then
+`claude plugin install insightflow@insightflow`. See
+[docs/install_and_use.md](docs/install_and_use.md).
 
 Known honesty constraints:
 

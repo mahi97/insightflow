@@ -181,7 +181,7 @@ The new plan incorporates the recorded evidence. Repeat from Step 3.
 
 ## The adaptive-experiment-scheduler skill
 
-The `.claude/skills/adaptive-experiment-scheduler/` skill primes the agent with
+The `skills/adaptive-experiment-scheduler/` skill primes the agent with
 the workflow above. It is triggered automatically when a researcher asks
 questions like "what should I run next?", "do I need more seeds?", "which
 baseline is missing?", or "what's safe to skip?".

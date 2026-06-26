@@ -86,7 +86,7 @@ for machine-readable output.
 ### Agent infrastructure
 - `AGENTS.md`: operating rules for any AI agent using InsightFlow.
 - `CLAUDE.md`: Claude Code-specific summary of the same rules.
-- `.claude/skills/adaptive-experiment-scheduler/SKILL.md`: skill definition that
+- `skills/adaptive-experiment-scheduler/SKILL.md`: skill definition that
   primes Claude Code with the workflow and iron rules before any scheduling task.
 - `.claude/hooks/guard_expensive_runs.py`: PreToolUse hook that warns or blocks
   expensive training launches (patterns: `python train.py`, `torchrun`,
