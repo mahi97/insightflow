@@ -36,10 +36,18 @@ planned for future stages. Items in the roadmap sections are **not yet built**.
 - Benchmark harness (`benchmark.py`): runs all policies on N synthetic projects
   and prints a comparison table. Eight policies are registered: `insightflow`,
   `grid`, `all_seeds_first`, `all_tasks_first`, `random`, `cheap_first`,
-  `fastest_first`, `oracle`. The current benchmark generates a
-  breadth-vs.-replication scenario; there is one scenario type.
-- `uv run insightflow benchmark --steps N --projects N` exposes this from the
-  CLI.
+  `fastest_first`, `oracle`.
+- **Five task scenarios** (`simulator.SCENARIOS`), each stressing a different
+  capability: `breadth` (breadth vs replication), `expensive_branch` (cost-aware
+  avoidance), `dependency_unlock` (run the cheap unlocker first),
+  `reviewer_baseline` (fill the deciding baseline early), and `noisy_seeds`
+  (targeted replication). `uv run insightflow benchmark --all-scenarios` reports
+  the % of runs/compute saved per scenario plus a robustness summary vs the oracle.
+  Result: InsightFlow saves ~54% of runs vs grid on average and stays within
+  ~1.25x of the oracle on every scenario, while each naive heuristic has at least
+  one task where it does 1.8-3.0x worse than optimal.
+- `uv run insightflow benchmark --steps N --projects N` runs the single-scenario
+  comparison from the CLI.
 
 ### W&B importer
 - `wandb_importer.py`: imports runs from a W&B project into the ledger. `wandb`
@@ -134,18 +142,13 @@ pre-computed) to evaluate how many runs would have been saved on a real
 experiment history. This provides a concrete benchmark beyond the current
 synthetic simulator.
 
-### More benchmark scenarios
+### More benchmark scenarios — DONE in v0.1
 
-The current benchmark has one scenario type (breadth vs. replication). Planned
-additions:
-- **Expensive-branch trap**: a high-cost experiment that looks attractive early
-  but provides little unique information once one other task is done.
-- **Dependency-unlock scenario**: an experiment that is cheap and unlocks several
-  high-value follow-ons.
-- **Reviewer-risk baseline**: a scenario where the missing-baseline penalty
-  should dominate, to verify the scheduler does not skip it.
-- **Noisy-seeds scenario**: high metric variance across seeds, to stress-test the
-  seed policy.
+The five scenarios above (`--all-scenarios`) now cover the expensive-branch trap,
+dependency-unlock, reviewer-risk baseline, and noisy-seeds cases. Remaining ideas
+for v0.2: refuted-claim scenarios (the method genuinely fails on a task), mixed
+multi-claim projects, and larger grids that stress wall-clock under parallel
+workers.
 
 ---
 

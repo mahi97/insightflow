@@ -30,6 +30,7 @@ from .reports import (
     render_benchmark_md,
     render_claim_confidence_md,
     render_plan_md,
+    render_scenarios_md,
     render_state_md,
     write_report,
 )
@@ -312,23 +313,37 @@ def simulate_step(
 def benchmark(
     steps: int = typer.Option(20, "--steps", help="Max steps per policy."),
     projects: int = typer.Option(3, "--projects", help="Number of synthetic projects."),
+    all_scenarios: bool = typer.Option(
+        False, "--all-scenarios", help="Run all task scenarios and quantify effectiveness gains."
+    ),
     project_dir: str | None = ProjectDirOpt,
     format: str = FormatOpt,
 ) -> None:
-    """Benchmark InsightFlow against baseline policies on synthetic projects."""
-    from .benchmark import run_benchmark
+    """Benchmark InsightFlow against baseline policies on synthetic projects.
+
+    With --all-scenarios, runs every task type (breadth, expensive-branch,
+    dependency-unlock, reviewer-baseline, noisy-seeds) and reports the % of runs
+    and compute saved, plus a robustness summary vs the oracle.
+    """
+    from .benchmark import run_benchmark, run_scenarios
 
     try:
-        result = run_benchmark(steps=steps, n_projects=projects)
         pdir = _project_dir(project_dir)
-        write_report(pdir, "benchmark.md", render_benchmark_md(result))
+        if all_scenarios:
+            result = run_scenarios(steps=max(steps, 40), n_projects=projects)
+            md = render_scenarios_md(result)
+            write_report(pdir, "benchmark_scenarios.md", md)
+        else:
+            result = run_benchmark(steps=steps, n_projects=projects)
+            md = render_benchmark_md(result)
+            write_report(pdir, "benchmark.md", md)
     except InsightFlowError as exc:
         _fail(str(exc))
         return
     if format == "json":
         _echo_json(result)
         return
-    typer.echo(render_benchmark_md(result))
+    typer.echo(md)
 
 
 @app.command("import-wandb")

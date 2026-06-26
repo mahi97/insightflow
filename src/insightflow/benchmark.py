@@ -16,8 +16,125 @@ experiments they choose to run. Methodology is documented in the report notes.
 
 from __future__ import annotations
 
-from .simulator import POLICIES, PolicyRun, generate_project, run_policy
+from .simulator import POLICIES, SCENARIOS, PolicyRun, generate_project, run_policy
 from .utils import fmt, mean
+
+
+def _aggregate(runs: list[PolicyRun]) -> dict:
+    solved = [r for r in runs if r.correct]
+    steps = [r.decided_step for r in solved if r.decided_step is not None]
+    costs = [r.cost_at_decision for r in solved if r.cost_at_decision is not None]
+    return {
+        "decided": mean(steps) if steps else None,
+        "cost": mean(costs) if costs else None,
+        "solved": len(solved),
+        "total": len(runs),
+    }
+
+
+def _pct_saved(insight: float | None, baseline: float | None) -> float | None:
+    if insight is None or baseline is None or baseline <= 0:
+        return None
+    return round(100.0 * (baseline - insight) / baseline, 1)
+
+
+NAIVE = ["grid", "all_seeds_first", "all_tasks_first", "random", "cheap_first", "fastest_first"]
+
+
+def run_scenarios(
+    steps: int = 40,
+    n_projects: int = 5,
+    base_seed: int = 0,
+    scenarios: list[str] | None = None,
+) -> dict:
+    """Run every policy on every scenario and quantify InsightFlow's gains.
+
+    For each scenario we report runs-to-correct-decision and cost-to-correct-decision
+    for InsightFlow vs the baselines, and the % of runs/compute saved vs the grid
+    baseline and vs the best naive baseline, with the oracle as a lower bound.
+    """
+    names = scenarios or list(SCENARIOS.keys())
+    per_scenario: dict[str, dict[str, dict]] = {}
+    rows: list[list] = []
+
+    for sname in names:
+        gen = SCENARIOS[sname]
+        runs_by_policy: dict[str, list[PolicyRun]] = {p: [] for p in POLICIES}
+        for i in range(max(1, n_projects)):
+            project = gen(base_seed + i, f"{sname}{i}")
+            for p in POLICIES:
+                runs_by_policy[p].append(run_policy(project, p, steps))
+        agg = {p: _aggregate(runs_by_policy[p]) for p in POLICIES}
+        per_scenario[sname] = agg
+
+        insight = agg["insightflow"]
+        grid = agg["grid"]
+        oracle = agg["oracle"]
+        naive_decided = [agg[p]["decided"] for p in NAIVE if agg[p]["decided"] is not None]
+        best_naive = min(naive_decided) if naive_decided else None
+        naive_cost = [agg[p]["cost"] for p in NAIVE if agg[p]["cost"] is not None]
+        best_naive_cost = min(naive_cost) if naive_cost else None
+
+        rows.append(
+            [
+                sname,
+                fmt(insight["decided"], 1) if insight["decided"] is not None else "-",
+                fmt(grid["decided"], 1) if grid["decided"] is not None else "-",
+                _disp_pct(_pct_saved(insight["decided"], grid["decided"])),
+                _disp_pct(_pct_saved(insight["decided"], best_naive)),
+                _disp_pct(_pct_saved(insight["cost"], best_naive_cost)),
+                fmt(oracle["decided"], 1) if oracle["decided"] is not None else "-",
+            ]
+        )
+
+    # Overall headline: mean % runs saved vs grid across scenarios (where defined).
+    vs_grid_raw = [
+        _pct_saved(per_scenario[s]["insightflow"]["decided"], per_scenario[s]["grid"]["decided"])
+        for s in names
+    ]
+    vs_grid = [v for v in vs_grid_raw if v is not None]
+    overall_runs_saved_vs_grid = round(mean(vs_grid), 1) if vs_grid else None
+
+    # Robustness: each policy's mean runs-to-decision across scenarios and its
+    # WORST-case ratio vs the oracle. A naive policy can tie InsightFlow on the one
+    # task it suits, but its worst-case ratio exposes the task where it fails.
+    robustness_rows = []
+    for p in ["oracle", "insightflow", *NAIVE]:
+        decided = [per_scenario[s][p]["decided"] for s in names]
+        ratios = [
+            per_scenario[s][p]["decided"] / per_scenario[s]["oracle"]["decided"]
+            for s in names
+            if per_scenario[s][p]["decided"] is not None
+            and per_scenario[s]["oracle"]["decided"]
+        ]
+        solved = sum(1 for s in names if per_scenario[s][p]["solved"] == per_scenario[s][p]["total"])
+        valid = [d for d in decided if d is not None]
+        robustness_rows.append(
+            [
+                p,
+                fmt(mean(valid), 2) if valid else "-",
+                fmt(max(ratios), 2) + "x" if ratios else "-",
+                f"{solved}/{len(names)}",
+            ]
+        )
+
+    return {
+        "headers": [
+            "scenario", "if_runs", "grid_runs", "%saved_vs_grid",
+            "%saved_vs_best_naive", "%cost_saved_vs_best", "oracle",
+        ],
+        "rows": rows,
+        "robustness_headers": ["policy", "mean_runs", "worst_vs_oracle", "scenarios_solved"],
+        "robustness_rows": robustness_rows,
+        "per_scenario": per_scenario,
+        "overall_runs_saved_vs_grid": overall_runs_saved_vs_grid,
+        "steps": steps,
+        "n_projects": max(1, n_projects),
+    }
+
+
+def _disp_pct(v: float | None) -> str:
+    return "-" if v is None else f"{v:+.1f}%"
 
 
 def run_benchmark(

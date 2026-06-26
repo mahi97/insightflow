@@ -184,6 +184,37 @@ def render_plan_md(plan: Plan) -> str:
 # --------------------------------------------------------------------------- #
 # Benchmark
 # --------------------------------------------------------------------------- #
+def render_scenarios_md(result: dict) -> str:
+    """Render the multi-scenario effectiveness benchmark."""
+    lines = ["# Multi-scenario effectiveness benchmark", ""]
+    lines.append(
+        f"_{result['n_projects']} project(s) per scenario, up to {result['steps']} steps per policy. "
+        f"'runs' = runs to the correct research decision; lower is better._"
+    )
+    lines.append("")
+    lines.append("## InsightFlow vs grid (and best naive) per scenario")
+    lines.append("")
+    lines.append(markdown_table(result["headers"], result["rows"]))
+    lines.append("")
+    overall = result.get("overall_runs_saved_vs_grid")
+    if overall is not None:
+        lines.append(
+            f"**Overall: InsightFlow saves {overall:.1f}% of runs vs grid, "
+            "averaged across scenarios.**"
+        )
+        lines.append("")
+    lines.append("## Robustness (the real story)")
+    lines.append("")
+    lines.append(
+        "No single naive heuristic is good everywhere. `worst_vs_oracle` is each "
+        "policy's worst-case runs relative to the oracle across all scenarios."
+    )
+    lines.append("")
+    lines.append(markdown_table(result["robustness_headers"], result["robustness_rows"]))
+    lines.append("")
+    return "\n".join(lines)
+
+
 def render_benchmark_md(result: dict) -> str:
     lines = ["# Benchmark", "", result.get("description", ""), ""]
     headers = result["headers"]

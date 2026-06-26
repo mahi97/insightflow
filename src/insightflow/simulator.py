@@ -203,6 +203,124 @@ def generate_project(seed: int = 0, name: str = "synthetic") -> SimProject:
 
 
 # --------------------------------------------------------------------------- #
+# Additional scenarios — each stresses a different scheduling capability so the
+# benchmark can show *where* InsightFlow's gains come from, not just an average.
+# --------------------------------------------------------------------------- #
+def _set_cell(truth: dict, ds: str, base: float, eff: float, sig: float) -> None:
+    cell = f"{ds}|default"
+    truth[("method_a", cell)] = CellTruth(mean=base + eff, sigma=sig)
+    truth[("baseline_a", cell)] = CellTruth(mean=base, sigma=sig * 0.7)
+
+
+def _method(
+    ds: str, s: int, claims: list[str], cost: float, time: float, deps: list[str] | None = None
+) -> Experiment:
+    return Experiment(
+        id=f"method_a_{ds}_s{s}", method="method_a", baseline="baseline_a", dataset=ds,
+        condition="default", seed=s, claim_links=claims, dependencies=deps or [],
+        expected_cost=cost, expected_time=time, tags=["method"],
+    )
+
+
+def _baseline(
+    ds: str, s: int, claims: list[str], cost: float, time: float, deps: list[str] | None = None
+) -> Experiment:
+    return Experiment(
+        id=f"baseline_a_{ds}_s{s}", method="baseline_a", dataset=ds, condition="default",
+        seed=s, claim_links=claims, dependencies=deps or [], expected_cost=cost,
+        expected_time=time, tags=["baseline"],
+    )
+
+
+def generate_expensive_branch(seed: int = 0, name: str = "expensive_branch") -> SimProject:
+    """One dataset is 5x more expensive; cheaper datasets decide the claim just as
+    well. A cost-blind policy spends compute on the expensive cell unnecessarily;
+    InsightFlow (cost in the denominator) reaches the same decision far cheaper."""
+    claim = Claim(id="C1", statement="method_a generalizes across datasets.", importance=0.9,
+                  minimum_effect_size=0.02, required_seeds=3, reviewer_risk=0.7)
+    truth: dict[tuple[str, str], CellTruth] = {}
+    exps: list[Experiment] = []
+    # The expensive dataset is listed first, so grid-order hits it early.
+    specs = [("tinyimagenet", 0.40, 5.0, 4.0), ("cifar10", 0.72, 1.0, 1.0), ("cifar100", 0.55, 1.0, 1.0)]
+    for ds, base, mcost, mtime in specs:
+        _set_cell(truth, ds, base, 0.06, 0.004)
+        for s in range(3):
+            exps.append(_method(ds, s, ["C1"], mcost, mtime))
+        exps.append(_baseline(ds, 0, ["C1"], mcost * 0.8, mtime * 0.8))
+    return SimProject(seed=seed, name=name, claims=[claim], experiments=exps, truth=truth)
+
+
+def generate_dependency_unlock(seed: int = 0, name: str = "dependency_unlock") -> SimProject:
+    """A single cheap ablation unlocks the experiments that actually decide the
+    claim; several distractor runs carry no decision value. InsightFlow runs the
+    unlocker first (dependency-unlock value); order-/random-based policies waste
+    steps on distractors before discovering the unlocked runs."""
+    claim = Claim(id="C1", statement="method_a beats baseline once enabled.", importance=0.95,
+                  minimum_effect_size=0.02, required_seeds=2, reviewer_risk=0.6)
+    truth: dict[tuple[str, str], CellTruth] = {}
+    exps: list[Experiment] = []
+    # Distractors first in the list (no claim links -> no decision value).
+    for i in range(4):
+        exps.append(Experiment(id=f"distractor_{i}", method="probe", dataset=f"misc{i}",
+                               condition="default", seed=0, claim_links=[], expected_cost=1.0,
+                               expected_time=1.0, tags=["method"]))
+    # The cheap unlocker.
+    exps.append(Experiment(id="ablation_unlock", method="method_a", dataset="ablation",
+                           condition="default", seed=0, claim_links=[], expected_cost=0.5,
+                           expected_time=0.5, tags=["method"]))
+    # Downstream deciding runs depend on the unlocker.
+    for ds, base in [("dsA", 0.70), ("dsB", 0.60)]:
+        _set_cell(truth, ds, base, 0.06, 0.004)
+        exps.append(_method(ds, 0, ["C1"], 1.0, 1.0, deps=["ablation_unlock"]))
+        exps.append(_baseline(ds, 0, ["C1"], 0.8, 0.8, deps=["ablation_unlock"]))
+    return SimProject(seed=seed, name=name, claims=[claim], experiments=exps, truth=truth)
+
+
+def generate_reviewer_baseline(seed: int = 0, name: str = "reviewer_baseline") -> SimProject:
+    """The method has many seeds available but the claim cannot be decided without
+    a baseline. InsightFlow runs method+baseline pairs (reviewer-risk value);
+    all-seeds-first/grid pile method seeds first and decide much later."""
+    claim = Claim(id="C1", statement="method_a beats baseline_a.", importance=0.9,
+                  minimum_effect_size=0.02, required_seeds=2, reviewer_risk=0.9)
+    truth: dict[tuple[str, str], CellTruth] = {}
+    exps: list[Experiment] = []
+    for ds, base in [("cifar10", 0.72), ("cifar100", 0.55)]:
+        _set_cell(truth, ds, base, 0.06, 0.004)
+        for s in range(5):  # lots of method seeds available (temptation to over-run)
+            exps.append(_method(ds, s, ["C1"], 1.0, 1.0))
+        exps.append(_baseline(ds, 0, ["C1"], 0.8, 0.8))
+    return SimProject(seed=seed, name=name, claims=[claim], experiments=exps, truth=truth)
+
+
+def generate_noisy_seeds(seed: int = 0, name: str = "noisy_seeds") -> SimProject:
+    """Two datasets: one clean, one high-variance with a smaller effect. Deciding
+    the noisy one needs replication; the clean one does not. InsightFlow adds seeds
+    where variance/borderline-ness warrants (seed policy); all-tasks-first
+    under-seeds the noisy cell, all-seeds-first over-seeds the clean one."""
+    claim = Claim(id="C1", statement="method_a beats baseline on both datasets.", importance=0.9,
+                  minimum_effect_size=0.02, required_seeds=4, reviewer_risk=0.6)
+    truth: dict[tuple[str, str], CellTruth] = {}
+    exps: list[Experiment] = []
+    _set_cell(truth, "clean", 0.72, 0.06, 0.003)
+    _set_cell(truth, "noisy", 0.55, 0.045, 0.035)  # smaller effect, high variance
+    for ds in ("clean", "noisy"):
+        for s in range(6):
+            exps.append(_method(ds, s, ["C1"], 1.0, 1.0))
+        for s in range(2):
+            exps.append(_baseline(ds, s, ["C1"], 0.8, 0.8))
+    return SimProject(seed=seed, name=name, claims=[claim], experiments=exps, truth=truth)
+
+
+SCENARIOS: dict[str, Callable[[int, str], SimProject]] = {
+    "breadth": generate_project,
+    "expensive_branch": generate_expensive_branch,
+    "dependency_unlock": generate_dependency_unlock,
+    "reviewer_baseline": generate_reviewer_baseline,
+    "noisy_seeds": generate_noisy_seeds,
+}
+
+
+# --------------------------------------------------------------------------- #
 # Policies (orderings)
 # --------------------------------------------------------------------------- #
 PolicyFn = Callable[[State, SimProject, "RunnerContext"], str | None]
