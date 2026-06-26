@@ -14,9 +14,9 @@ existing runs (W&B / logs) and tells the agent what to run next.
 # from PyPI (once published)
 uv tool install insightflow
 # or straight from git today
-uv tool install "git+https://github.com/insightflow/insightflow"
+uv tool install "git+https://github.com/mahi97/insightflow"
 # optional W&B import support
-uv tool install "git+https://github.com/insightflow/insightflow" --with wandb
+uv tool install "git+https://github.com/mahi97/insightflow" --with wandb
 ```
 
 Now `insightflow` is on your PATH in any directory. (Plain `pip install
@@ -30,7 +30,7 @@ automatically, with **no prompts to paste**.
 
 ```bash
 # add this repo as a plugin marketplace, then install
-claude plugin marketplace add insightflow/insightflow
+claude plugin marketplace add mahi97/insightflow
 claude plugin install insightflow@insightflow
 ```
 

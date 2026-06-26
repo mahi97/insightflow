@@ -33,7 +33,7 @@ Requires Python 3.10+. InsightFlow uses [uv](https://docs.astral.sh/uv/) for all
 curl -Lsf https://astral.sh/uv/install.sh | sh
 
 # Clone and install (editable, with dev deps)
-git clone https://github.com/insightflow/insightflow
+git clone https://github.com/mahi97/insightflow
 cd insightflow
 uv sync
 
@@ -400,7 +400,7 @@ Documentation (`docs/`): [install_and_use.md](docs/install_and_use.md),
 [roadmap.md](docs/roadmap.md).
 
 Install as a Claude Code plugin (skills + guard hook + `/insightflow-*` commands):
-`claude plugin marketplace add insightflow/insightflow` then
+`claude plugin marketplace add mahi97/insightflow` then
 `claude plugin install insightflow@insightflow`. See
 [docs/install_and_use.md](docs/install_and_use.md).
 

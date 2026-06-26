@@ -44,8 +44,8 @@ insightflow = "insightflow.cli:app"
 insight = "insightflow.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/insightflow/insightflow"
-Documentation = "https://github.com/insightflow/insightflow/tree/main/docs"
+Homepage = "https://github.com/mahi97/insightflow"
+Documentation = "https://github.com/mahi97/insightflow/tree/main/docs"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/insightflow"]
