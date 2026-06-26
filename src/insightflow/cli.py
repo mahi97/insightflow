@@ -346,6 +346,90 @@ def benchmark(
     typer.echo(md)
 
 
+@app.command("run")
+def run_cmd(
+    experiment_id: str | None = typer.Option(
+        None, "--experiment-id", help="Experiment to run (default: top of the plan)."
+    ),
+    execute: bool = typer.Option(
+        False, "--execute", "-y", help="Actually run it. Without this flag, dry-run only."
+    ),
+    project_dir: str | None = ProjectDirOpt,
+) -> None:
+    """Run an experiment locally and record the result (local launcher).
+
+    By default this is a dry run that shows what *would* run and its cost — pass
+    --execute to actually launch. The command must print a JSON line of metrics
+    (e.g. {"accuracy": 0.81}) or write one to $INSIGHTFLOW_METRICS_FILE.
+    """
+    from .launcher import LocalLauncher
+    from .schemas import ActionType
+
+    try:
+        ledger = _ledger(project_dir)
+        st = ledger.load_state()
+        if experiment_id:
+            exp = st.experiment(experiment_id)
+            if exp is None:
+                _fail(f"Experiment '{experiment_id}' not found.")
+                return
+        else:
+            plan_obj = build_plan(st)
+            top = next(
+                (
+                    a
+                    for a in plan_obj.actions
+                    if a.action_type
+                    in (ActionType.launch, ActionType.add_seed, ActionType.launch_baseline)
+                ),
+                None,
+            )
+            if top is None:
+                typer.echo("No runnable action in the current plan; nothing to run.")
+                return
+            exp = st.experiment(top.experiment_id)
+            if exp is None:
+                _fail(f"Experiment '{top.experiment_id}' not found.")
+                return
+
+        if not exp.command:
+            _fail(
+                f"Experiment '{exp.id}' has no `command`. Add one to configs/experiments.yaml "
+                "or use `insightflow log-result`."
+            )
+            return
+
+        if not execute:
+            typer.echo(f"[dry-run] Would run: {exp.id}")
+            typer.echo(f"  command: {exp.command}")
+            typer.echo(f"  est. cost/time: {exp.expected_cost} / {exp.expected_time}")
+            typer.echo("Re-run with --execute to actually launch and record the result.")
+            return
+
+        typer.echo(f"Running {exp.id} ...")
+        result = LocalLauncher(cwd=str(ledger.project_dir)).run(exp)
+        ledger.add_result(result)
+        ledger.log_decision(
+            {"event": "run", "experiment_id": exp.id, "status": result.status.value,
+             "metrics": result.metrics}
+        )
+    except InsightFlowError as exc:
+        _fail(str(exc))
+        return
+
+    if result.status == RunStatus.completed:
+        typer.secho(
+            f"Completed {exp.id}: {result.metrics} (wall_time={result.wall_time}s)",
+            fg=typer.colors.GREEN,
+        )
+        typer.echo("Re-run `uv run insightflow plan` to replan with the new evidence.")
+    else:
+        typer.secho(
+            f"Run of {exp.id} did not produce metrics ({result.notes}). Recorded as failed.",
+            fg=typer.colors.YELLOW,
+        )
+
+
 @app.command("import-wandb")
 def import_wandb_cmd(
     entity: str = typer.Option(..., "--entity", help="W&B entity (team/user)."),

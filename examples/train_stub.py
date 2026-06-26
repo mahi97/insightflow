@@ -44,6 +44,9 @@ def main() -> None:
     metrics = fake_train(args.method, args.dataset, args.seed, args.alpha)
     print(f"[train_stub] method={args.method} dataset={args.dataset} "
           f"seed={args.seed} alpha={args.alpha} -> {metrics}")
+    # Final line is a JSON object of metrics, which `insightflow run` parses.
+    import json
+    print(json.dumps(metrics))
 
     if args.wandb:
         try:

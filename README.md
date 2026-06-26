@@ -19,7 +19,7 @@ It is CLI-first and agent-native. The CLI and ledger (SQLite + JSONL) are the so
 
 - **Not AutoML or hyperparameter optimization.** It does not tune configurations; it schedules across configurations you define.
 - **Not an experiment tracker.** It does not replace W&B or MLflow. Use those to log metrics; use InsightFlow to decide what to run.
-- **Not a job launcher.** v0.1 is advisor mode — it recommends, you launch. Slurm/Ray launchers are on the roadmap.
+- **Not a cluster job launcher.** It can run experiments *locally* (`insightflow run --execute`), but Slurm/Ray submission is on the roadmap — InsightFlow recommends; you (or a launcher) run on the cluster.
 - **Not a Bayesian inference engine.** Claim confidence is a transparent deterministic heuristic, not a calibrated Bayesian posterior. Treat it as a ranking signal (see [docs/concepts.md](docs/concepts.md) when published).
 
 ---

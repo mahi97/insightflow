@@ -124,16 +124,21 @@ shape.
 - **CSV importer**: import run results from a CSV file, for projects that log to
   flat files or export from other trackers.
 
-### Launchers (human-approved execution mode)
+### Launchers (execution mode)
 
-- **Slurm launcher**: after human approval in the conversation, issue a `sbatch`
-  job for the recommended experiment and record the submitted job ID.
-- **Ray launcher**: same for Ray clusters.
-- **Local launcher**: run a command locally (e.g., `python train.py`) and stream
-  output.
+- **Local launcher — DONE in v0.1.** `uv run insightflow run [--experiment-id ID]
+  [--execute]` runs an experiment's `command` locally, parses metrics from a JSON
+  stdout line (or `$INSIGHTFLOW_METRICS_FILE`), measures wall-clock time, and
+  records the result. Dry-run by default; `--execute` actually launches. See
+  `src/insightflow/launcher.py`.
+- **Slurm launcher** (planned): submit `sbatch` for the recommended experiment and
+  record the job ID; poll for completion.
+- **Ray launcher** (planned): same for Ray clusters.
+- **Live monitoring** (planned): poll W&B/job state and feed partial curves to the
+  partial-run policy automatically instead of hand-recording them.
 
-All launchers require explicit human sign-off before running. The guard hook
-would integrate with launcher state to verify plan freshness automatically.
+Cluster launchers should require explicit sign-off; the guard hook already
+verifies plan freshness before expensive launches.
 
 ### Offline replay evaluation
 

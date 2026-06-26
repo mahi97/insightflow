@@ -25,7 +25,8 @@ In that setting InsightFlow plays three roles for the agent:
 > launch or kill runs. In the autonomous setting **the agent is the executor** —
 > it runs the training commands itself (via its shell) and records the results.
 > InsightFlow tells it *what* to run and *when to stop*; the agent does the
-> running. There are no built-in Slurm/Ray/local launchers yet (roadmap).
+> running — or, for local runs, `uv run insightflow run --execute` launches the
+> top experiment and records the result. Slurm/Ray launchers are on the roadmap.
 
 ---
 
