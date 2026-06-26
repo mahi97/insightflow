@@ -1,0 +1,95 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "insightflow"
+version = "0.1.0"
+description = "Adaptive experiment scheduler for ML research that optimizes time-to-insight, not grid completion."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "InsightFlow contributors" }]
+keywords = [
+    "machine-learning",
+    "research",
+    "experiment-scheduling",
+    "active-learning",
+    "wandb",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "pydantic>=2.5",
+    "pyyaml>=6.0",
+    "typer>=0.12",
+]
+
+[project.optional-dependencies]
+wandb = ["wandb>=0.16"]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+    "mypy>=1.8",
+    "types-PyYAML>=6.0",
+]
+
+[project.scripts]
+insightflow = "insightflow.cli:app"
+insight = "insightflow.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/insightflow/insightflow"
+Documentation = "https://github.com/insightflow/insightflow/tree/main/docs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/insightflow"]
+
+[dependency-groups]
+# Dev tooling, installed by default with `uv sync`.
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+    "mypy>=1.8",
+    "types-PyYAML>=6.0",
+]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "W", "C4"]
+ignore = [
+    "B008", # typer uses function calls (typer.Option/Argument) in defaults by design
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+check_untyped_defs = true
+disallow_incomplete_defs = true
+# Pragmatic for v0.1: we type our own code but do not chase third-party stubs.
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["wandb.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]

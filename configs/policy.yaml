@@ -1,0 +1,17 @@
+weight_decision_value: 1.0
+weight_uncertainty: 0.8
+weight_dependency: 0.6
+weight_reviewer_risk: 0.7
+weight_redundancy_penalty: 0.9
+weight_premature_replication_penalty: 1.0
+weight_seed_value: 0.5
+lambda_cost: 0.3
+queue_threshold: 0.15
+avoid_threshold: 0.03
+top_k: 5
+decision_boundary: 0.5
+boundary_margin: 0.15
+high_variance_threshold: 0.4
+surprise_threshold: 0.5
+support_margin: 0.25
+prefer_breadth: true

@@ -1,0 +1,19 @@
+claims:
+- id: C1
+  statement: method_a improves accuracy over baseline_a, and this generalizes across
+    datasets (external validity).
+  importance: high
+  target_metric: accuracy
+  desired_direction: higher
+  minimum_effect_size: 0.02
+  required_seeds: 3
+  reviewer_risk: 0.7
+  notes: Main paper claim. Generality across datasets is the key uncertainty.
+- id: C2
+  statement: method_a is also more compute-efficient than baseline_a.
+  importance: medium
+  target_metric: accuracy
+  minimum_effect_size: 0.01
+  required_seeds: 2
+  reviewer_risk: 0.3
+  notes: Secondary claim.

@@ -1,0 +1,5 @@
+pools:
+- type: gpu
+  count: 4
+  cost_per_hour: 2.0
+budget_gpu_hours: 60

@@ -1,0 +1,304 @@
+experiments:
+- id: method_a_cifar10_s0
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar10
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  - C2
+  expected_cost: 1.0
+  expected_time: 1.0
+  resource_type: gpu
+  tags:
+  - method
+  command: python train.py --method method_a --dataset cifar10 --seed 0
+- id: method_a_cifar10_s1
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar10
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  - C2
+  expected_cost: 1.0
+  expected_time: 1.0
+  resource_type: gpu
+  tags:
+  - method
+  command: python train.py --method method_a --dataset cifar10 --seed 1
+- id: method_a_cifar10_s2
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar10
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  - C2
+  expected_cost: 1.0
+  expected_time: 1.0
+  resource_type: gpu
+  tags:
+  - method
+  command: python train.py --method method_a --dataset cifar10 --seed 2
+- id: method_a_cifar10_s3
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar10
+  condition: default
+  seed: 3
+  claim_links:
+  - C1
+  - C2
+  expected_cost: 1.0
+  expected_time: 1.0
+  resource_type: gpu
+  tags:
+  - method
+  command: python train.py --method method_a --dataset cifar10 --seed 3
+- id: method_a_cifar10_s4
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar10
+  condition: default
+  seed: 4
+  claim_links:
+  - C1
+  - C2
+  expected_cost: 1.0
+  expected_time: 1.0
+  resource_type: gpu
+  tags:
+  - method
+  command: python train.py --method method_a --dataset cifar10 --seed 4
+- id: baseline_a_cifar10_s0
+  method: baseline_a
+  dataset: cifar10
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 0.8
+  expected_time: 0.8
+  resource_type: gpu
+  tags:
+  - baseline
+  command: python train.py --method baseline_a --dataset cifar10 --seed 0
+- id: baseline_a_cifar10_s1
+  method: baseline_a
+  dataset: cifar10
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 0.8
+  expected_time: 0.8
+  resource_type: gpu
+  tags:
+  - baseline
+  command: python train.py --method baseline_a --dataset cifar10 --seed 1
+- id: method_a_cifar100_s0
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar100
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  - C2
+  expected_cost: 1.2
+  expected_time: 1.0
+  resource_type: gpu
+  tags:
+  - method
+  command: python train.py --method method_a --dataset cifar100 --seed 0
+- id: method_a_cifar100_s1
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar100
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  - C2
+  expected_cost: 1.2
+  expected_time: 1.0
+  resource_type: gpu
+  tags:
+  - method
+  command: python train.py --method method_a --dataset cifar100 --seed 1
+- id: method_a_cifar100_s2
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar100
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  - C2
+  expected_cost: 1.2
+  expected_time: 1.0
+  resource_type: gpu
+  tags:
+  - method
+  command: python train.py --method method_a --dataset cifar100 --seed 2
+- id: method_a_cifar100_s3
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar100
+  condition: default
+  seed: 3
+  claim_links:
+  - C1
+  - C2
+  expected_cost: 1.2
+  expected_time: 1.0
+  resource_type: gpu
+  tags:
+  - method
+  command: python train.py --method method_a --dataset cifar100 --seed 3
+- id: method_a_cifar100_s4
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar100
+  condition: default
+  seed: 4
+  claim_links:
+  - C1
+  - C2
+  expected_cost: 1.2
+  expected_time: 1.0
+  resource_type: gpu
+  tags:
+  - method
+  command: python train.py --method method_a --dataset cifar100 --seed 4
+- id: baseline_a_cifar100_s0
+  method: baseline_a
+  dataset: cifar100
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 0.96
+  expected_time: 0.8
+  resource_type: gpu
+  tags:
+  - baseline
+  command: python train.py --method baseline_a --dataset cifar100 --seed 0
+- id: baseline_a_cifar100_s1
+  method: baseline_a
+  dataset: cifar100
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 0.96
+  expected_time: 0.8
+  resource_type: gpu
+  tags:
+  - baseline
+  command: python train.py --method baseline_a --dataset cifar100 --seed 1
+- id: method_a_svhn_s0
+  method: method_a
+  baseline: baseline_a
+  dataset: svhn
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  - C2
+  expected_cost: 1.1
+  expected_time: 1.0
+  resource_type: gpu
+  tags:
+  - method
+  command: python train.py --method method_a --dataset svhn --seed 0
+- id: method_a_svhn_s1
+  method: method_a
+  baseline: baseline_a
+  dataset: svhn
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  - C2
+  expected_cost: 1.1
+  expected_time: 1.0
+  resource_type: gpu
+  tags:
+  - method
+  command: python train.py --method method_a --dataset svhn --seed 1
+- id: method_a_svhn_s2
+  method: method_a
+  baseline: baseline_a
+  dataset: svhn
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  - C2
+  expected_cost: 1.1
+  expected_time: 1.0
+  resource_type: gpu
+  tags:
+  - method
+  command: python train.py --method method_a --dataset svhn --seed 2
+- id: method_a_svhn_s3
+  method: method_a
+  baseline: baseline_a
+  dataset: svhn
+  condition: default
+  seed: 3
+  claim_links:
+  - C1
+  - C2
+  expected_cost: 1.1
+  expected_time: 1.0
+  resource_type: gpu
+  tags:
+  - method
+  command: python train.py --method method_a --dataset svhn --seed 3
+- id: method_a_svhn_s4
+  method: method_a
+  baseline: baseline_a
+  dataset: svhn
+  condition: default
+  seed: 4
+  claim_links:
+  - C1
+  - C2
+  expected_cost: 1.1
+  expected_time: 1.0
+  resource_type: gpu
+  tags:
+  - method
+  command: python train.py --method method_a --dataset svhn --seed 4
+- id: baseline_a_svhn_s0
+  method: baseline_a
+  dataset: svhn
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 0.8800000000000001
+  expected_time: 0.8
+  resource_type: gpu
+  tags:
+  - baseline
+  command: python train.py --method baseline_a --dataset svhn --seed 0
+- id: baseline_a_svhn_s1
+  method: baseline_a
+  dataset: svhn
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 0.8800000000000001
+  expected_time: 0.8
+  resource_type: gpu
+  tags:
+  - baseline
+  command: python train.py --method baseline_a --dataset svhn --seed 1
