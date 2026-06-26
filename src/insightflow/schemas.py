@@ -280,6 +280,16 @@ class Policy(BaseModel):
     # Seed policy
     prefer_breadth: bool = True
 
+    # Confidence model: "heuristic" (default, v0.1) or "bayes" (v0.2 calibrated
+    # Normal-Normal hierarchical posterior + value-of-information scoring).
+    confidence_model: str = "heuristic"
+    prior_effect_mean: float = 0.0
+    prior_effect_var: float = 1.0
+    between_condition_sd: float = 0.05  # how much the effect can vary across conditions
+    # (so a single dataset cannot, by itself, establish cross-condition generality)
+    within_seed_sd: float = 0.02  # default per-seed noise when it can't be estimated
+    decision_prob_threshold: float = 0.9  # P(supported)/P(refuted) needed to decide
+
 
 class ResourcePool(BaseModel):
     model_config = ConfigDict(extra="ignore")

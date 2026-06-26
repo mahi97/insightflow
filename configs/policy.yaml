@@ -15,3 +15,9 @@ high_variance_threshold: 0.4
 surprise_threshold: 0.5
 support_margin: 0.25
 prefer_breadth: true
+confidence_model: heuristic
+prior_effect_mean: 0.0
+prior_effect_var: 1.0
+between_condition_sd: 0.05
+within_seed_sd: 0.02
+decision_prob_threshold: 0.9

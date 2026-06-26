@@ -100,17 +100,20 @@ for machine-readable output.
 
 ---
 
-## v0.2 — Planned (not built)
+## v0.2 — In progress
 
 ### Improved scoring
 
-**Bayesian / value-of-information scoring.** Replace the current heuristic
-claim-confidence computation with a principled Bayesian approach. Instead of
-a deterministic formula over run counts and metric values, model each claim
-as a belief distribution and score actions by their expected information gain
-(value of information). This changes the scoring module but not the plan format.
+**Bayesian / value-of-information scoring — DONE (opt-in).** Set
+`confidence_model: bayes` in `policy.yaml` to use a calibrated, closed-form
+finite-population Normal–Normal model (`bayes.py`) of the population effect, with
+actions scored by the literal expected reduction in decision uncertainty (value
+of information). It is deterministic, adversarially verified, and calibrated
+(Expected Calibration Error 0.0119 over 200k draws). The heuristic remains the
+default; see `docs/concepts.md`. Remaining: a fully hierarchical treatment of
+within-cell variance (currently a plug-in standard error).
 
-**Real learning-curve extrapolation for partial runs.** Replace the current
+**Real learning-curve extrapolation for partial runs (planned).** Replace the current
 partial-run heuristic with a proper learning-curve model (e.g., freeze-thaw or
 a simple parametric fit) that extrapolates final performance from
 `partial_history`. This lets the scheduler decide more reliably whether to

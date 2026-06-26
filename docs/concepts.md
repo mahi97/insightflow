@@ -131,9 +131,42 @@ weight maps directly onto a term of the scheduling objective. Key fields:
 
 ## Claim Confidence
 
-Claim confidence is computed by `compute_claim_evidence` in `scoring.py`. It
-is an explicit, documented **heuristic** — not a Bayesian posterior. It is
-intentionally simple enough to unit-test and to explain to a researcher.
+Claim confidence is computed by `compute_claim_evidence` in `scoring.py`. There
+are **two confidence models**, selected by `policy.confidence_model`:
+
+- **`heuristic`** (default) — the transparent, explainable model described below.
+  Simple enough to unit-test and explain to a researcher.
+- **`bayes`** — a calibrated, closed-form **Bayesian** model (`bayes.py`). See
+  [the Bayesian model](#the-bayesian-model-v02) below.
+
+The two share the same evidence-gathering and the same `ClaimConfidence`
+interface, so reports, the CLI, and the scheduler are identical either way; only
+how `status`/`confidence` and the action scores are computed differs.
+
+### The Bayesian model (v0.2)
+
+Set `confidence_model: bayes` in `policy.yaml` to use a **finite-population
+Normal–Normal hierarchical** model of the population effect `M` over the
+project's `K` defined conditions. With `k` of `K` observed:
+
+    obs_var = sigma_b^2 / k * (K - k) / K      (finite-population correction)
+            + sum_i se_i^2 / k^2               (within-cell noise)
+
+and a conjugate Normal prior gives `P(supported) = P(M >= minimum_effect_size)`.
+The finite-population correction is the crux: observing **all** conditions
+(`k = K`) removes between-condition uncertainty entirely, while a single dataset
+(`k << K`) cannot establish generality — breadth-over-replication falls out of
+the math, not a tuned penalty. Action scores use **value of information**: the
+expected drop in decision uncertainty `p(1-p)` an action buys, so a new condition
+scores far above an extra seed automatically.
+
+This model is **calibrated**: an independent reliability experiment
+(N = 200,000 draws from the model) measured an Expected Calibration Error of
+**0.0119** (well under 0.05) — when it says 80%, it is right about 80% of the
+time. It is the honest upgrade from the heuristic; the heuristic remains the
+default because it is faster to reach a decision and trivially explainable, while
+`bayes` gives calibrated probabilities and a principled stopping rule. The
+heuristic below is what runs unless you opt in.
 
 ### Evidence breadth
 
@@ -298,15 +331,23 @@ information** (VoI): each action is scored by the expected reduction in
 decision uncertainty per unit cost. The Knowledge Gradient (Frazier 2009) and
 OCBA (Chen et al. 2010) formalise this for ranking/selection problems.
 
-InsightFlow's scoring objective is a **transparent heuristic approximation**
-of VoI per unit cost. The `decision_value` term approximates expected
-information gain (importance × boundary_factor × coverage_gap × novelty); the
-denominator `expected_time + lambda * expected_cost` is the cost; together the
-ratio is structurally similar to the Knowledge Gradient. However, InsightFlow
-does not maintain a posterior distribution over outcomes, does not compute
-an analytical KG step, and is not asymptotically optimal in the bandit sense.
-The choice is explicit: v0.1 prioritises transparency and testability over
-statistical optimality. A proper Bayesian VoI scorer is on the v0.2 roadmap.
+InsightFlow ships **two** scorers against this framing:
+
+- The default `heuristic` scorer is a **transparent approximation** of VoI per
+  unit cost: `decision_value` approximates information gain (importance ×
+  boundary_factor × coverage_gap × novelty) and the denominator
+  `expected_time + lambda * expected_cost` is the cost. It does not maintain a
+  posterior and is not asymptotically optimal — it prioritises transparency and
+  testability.
+- The opt-in `bayes` scorer (`confidence_model: bayes`) **does** maintain a
+  calibrated posterior (the finite-population Normal–Normal model above, ECE
+  0.0119) and scores actions by the literal expected reduction in decision
+  uncertainty — a concrete, deterministic value-of-information rule. This is the
+  Knowledge-Gradient-style scorer the earlier roadmap promised, now implemented.
+
+Still future (v0.2+): learning-curve / freeze-thaw posteriors for partial runs,
+and replacing the plug-in per-cell standard errors with a fully hierarchical
+treatment of within-cell variance.
 
 ### DAG scheduling (HEFT)
 

@@ -28,6 +28,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
+from .bayes import Posterior, evoi, population_posterior, status_from_posterior
 from .schemas import (
     ActionType,
     Claim,
@@ -77,6 +78,10 @@ class ClaimEvidence:
     seed_sufficiency: float
     support: float | None  # P(claim true) in [0,1], or None if unmeasured
     reliability: float
+    # Per-effect-cell estimate + squared standard error (for the Bayesian model).
+    cell_effects: dict[str, float] = field(default_factory=dict)
+    cell_se2: dict[str, float] = field(default_factory=dict)
+    posterior: Posterior | None = None  # set when policy.confidence_model == "bayes"
 
 
 def _cell_results(state: State, experiments: list[Experiment], target: str) -> dict[str, list[float]]:
@@ -118,10 +123,19 @@ def compute_claim_evidence(state: State) -> dict[str, ClaimEvidence]:
         # Cells where the *effect* is measurable (method AND baseline present).
         # Generality is about the effect holding, so breadth counts these.
         effect_cells = {cell for cell in method_observed if baseline_results.get(cell)}
-        effects = [
-            _oriented(mean(method_results[cell]) - mean(baseline_results[cell]), claim)
-            for cell in effect_cells
-        ]
+        within = policy.within_seed_sd
+        cell_effects_map: dict[str, float] = {}
+        cell_se2_map: dict[str, float] = {}
+        # sorted() so insertion order (and thus the Bayesian float sums) is
+        # independent of set hash-ordering across processes -> fully deterministic.
+        for cell in sorted(effect_cells):
+            m_vals = method_results[cell]
+            b_vals = baseline_results[cell]
+            s_m = max(pstdev(m_vals) if len(m_vals) >= 2 else within, within * 0.25)
+            s_b = max(pstdev(b_vals) if len(b_vals) >= 2 else within, within * 0.25)
+            cell_effects_map[cell] = _oriented(mean(m_vals) - mean(b_vals), claim)
+            cell_se2_map[cell] = s_m**2 / max(1, len(m_vals)) + s_b**2 / max(1, len(b_vals))
+        effects = list(cell_effects_map.values())
         observed_effect = mean(effects) if effects else None
 
         observed = method_observed  # for scoring's launch-vs-seed decision
@@ -139,6 +153,16 @@ def compute_claim_evidence(state: State) -> dict[str, ClaimEvidence]:
             claim, policy, observed, observed_effect, evidence_breadth, seed_sufficiency
         )
         reliability = 0.5 * evidence_breadth + 0.5 * seed_sufficiency
+
+        # Bayesian override: a calibrated posterior on the population effect.
+        posterior: Posterior | None = None
+        if policy.confidence_model == "bayes":
+            posterior = population_posterior(
+                effects, list(cell_se2_map.values()), total_conditions, claim, policy
+            )
+            status_str, near = status_from_posterior(posterior, policy)
+            status = ClaimStatus(status_str)
+            support = posterior.p_supported
 
         conf = ClaimConfidence(
             claim_id=claim.id,
@@ -164,6 +188,9 @@ def compute_claim_evidence(state: State) -> dict[str, ClaimEvidence]:
             seed_sufficiency=seed_sufficiency,
             support=support,
             reliability=reliability,
+            cell_effects=cell_effects_map,
+            cell_se2=cell_se2_map,
+            posterior=posterior,
         )
     return evidence
 
@@ -274,6 +301,8 @@ class Scorer:
 
     # -- term computation ---------------------------------------------------
     def _launch_terms(self, exp: Experiment) -> dict[str, float]:
+        if self.policy.confidence_model == "bayes":
+            return self._bayes_terms(exp, ActionType.launch)
         dv, ur, rr, rp, prp = [], [], [], [], []
         for cid in exp.claim_links:
             ev = self.evidence.get(cid)
@@ -330,6 +359,8 @@ class Scorer:
         }
 
     def _seed_terms(self, exp: Experiment, decision: SeedDecision) -> dict[str, float]:
+        if self.policy.confidence_model == "bayes":
+            return self._bayes_terms(exp, ActionType.add_seed)
         dv, ur, rr, rp, prp, sv = [], [], [], [], [], []
         urgency = decision.urgency if decision.add else 0.0
         for cid in exp.claim_links:
@@ -382,6 +413,78 @@ class Scorer:
             ]
             raw += _combine(importances) if importances else 0.3
         return 1.0 - 1.0 / (1.0 + raw)  # saturating in [0, 1)
+
+    # -- Bayesian (value-of-information) terms ------------------------------
+    def _bayes_posterior_after(self, exp: Experiment, ev: ClaimEvidence) -> tuple[float, float]:
+        """Return (current p_supported, p_supported after this action) for ``ev``.
+
+        The hypothetical observation is taken at the current posterior mean
+        (pre-posterior expectation), so only the *variance* reduction drives EVOI.
+        A baseline that completes a method-observed cell, or a new condition, adds
+        a cell; an extra seed only shrinks one cell's within-noise.
+        """
+        assert ev.posterior is not None
+        within = self.policy.within_seed_sd
+        cell = exp.cell_key
+        effects = list(ev.cell_effects.values())
+        se2s = list(ev.cell_se2.values())
+        cells = list(ev.cell_effects.keys())
+        post = ev.posterior
+        discount = 1.0
+
+        if cell in ev.cell_effects:
+            # Extra seed on an existing effect cell: shrink within-noise (diminishing).
+            idx = cells.index(cell)
+            n_m = max(1, ev.seeds_per_cell.get(cell, 1))
+            new_se2 = list(se2s)
+            new_se2[idx] = se2s[idx] * (n_m / (n_m + 1.0))
+            after = population_posterior(effects, new_se2, ev.total_conditions, ev.claim, self.policy)
+        elif exp.is_baseline and cell in ev.observed_conditions:
+            # Baseline that *completes* a method-observed cell -> realizes a new cell.
+            n_m = max(1, ev.seeds_per_cell.get(cell, 1))
+            after = population_posterior(
+                effects + [post.mean], se2s + [within**2 * (1.0 / n_m + 1.0)],
+                ev.total_conditions, ev.claim, self.policy,
+            )
+        else:
+            # Speculative new condition (method, or baseline before its method):
+            # half-credit, because the pair is not yet complete.
+            discount = 0.5
+            after = population_posterior(
+                effects + [post.mean], se2s + [within**2 * 2.0],
+                ev.total_conditions, ev.claim, self.policy,
+            )
+        # Blend toward the current p by the discount (speculative actions count less).
+        p_after = post.p_supported + discount * (after.p_supported - post.p_supported)
+        return post.p_supported, p_after
+
+    def _bayes_terms(self, exp: Experiment, action_type: ActionType) -> dict[str, float]:
+        dv, rr = [], []
+        for cid in exp.claim_links:
+            ev = self.evidence.get(cid)
+            if ev is None or ev.posterior is None:
+                continue
+            cell = exp.cell_key
+            p_before, p_after = self._bayes_posterior_after(exp, ev)
+            dv.append(ev.claim.importance * evoi(p_before, p_after))
+            is_missing_baseline = (
+                exp.is_baseline and cell in ev.observed_conditions and cell not in ev.cell_effects
+            )
+            is_new = (not exp.is_baseline) and cell not in ev.observed_conditions
+            rr.append(
+                ev.claim.reviewer_risk * (1.0 if is_missing_baseline else (0.5 if is_new else 0.1))
+            )
+        # EVOI subsumes redundancy/premature-replication penalties (a redundant
+        # seed simply has ~0 EVOI), so those terms are 0 in Bayesian mode.
+        return {
+            "decision_value": _combine(dv),
+            "uncertainty_reduction": 0.0,
+            "dependency_unlock": self._dependency_unlock(exp),
+            "reviewer_risk_reduction": _combine(rr),
+            "seed_value": 0.0,
+            "redundancy_penalty": 0.0,
+            "premature_replication_penalty": 0.0,
+        }
 
     # -- assembly -----------------------------------------------------------
     def _assemble(self, exp: Experiment, action_type: ActionType, terms: dict[str, float]) -> PlanAction:

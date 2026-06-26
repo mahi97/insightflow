@@ -45,6 +45,16 @@ class Scheduler:
     def __init__(self, state: State):
         self.state = state
         self.policy = state.policy
+        # Bayesian (value-of-information) scores live on a different, smaller scale
+        # than the heuristic ones. There, keep the best action queued until the
+        # posterior actually decides — EVOI only reaches ~0 when nothing is left to
+        # learn — so use a near-zero queue threshold instead of the heuristic 0.15.
+        if self.policy.confidence_model == "bayes":
+            self.queue_threshold = 1e-4
+            self.avoid_threshold = 1e-6
+        else:
+            self.queue_threshold = self.policy.queue_threshold
+            self.avoid_threshold = self.policy.avoid_threshold
 
     def plan(self, created_at: str | None = None) -> Plan:
         state = self.state
@@ -132,7 +142,7 @@ class Scheduler:
             if hint == "running":
                 if action.action_type in (ActionType.stop, ActionType.pause):
                     queue.append(action)
-                elif action.score >= p.avoid_threshold:
+                elif action.score >= self.avoid_threshold:
                     queue.append(action)
                 else:
                     postponed.append(action)
@@ -146,10 +156,10 @@ class Scheduler:
             cell_role = (exp.cell_key, exp.is_baseline) if exp else (action.experiment_id, False)
             duplicate_cell = cell_role in queued_cells
 
-            if action.score >= p.queue_threshold and len(queue) < p.top_k and not duplicate_cell:
+            if action.score >= self.queue_threshold and len(queue) < p.top_k and not duplicate_cell:
                 queue.append(action)
                 queued_cells.add(cell_role)
-            elif action.score >= p.avoid_threshold:
+            elif action.score >= self.avoid_threshold:
                 relabeled = _relabel(action, ActionType.postpone)
                 if duplicate_cell:
                     relabeled.rationale += (
