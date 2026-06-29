@@ -66,7 +66,12 @@ def fit_learning_curve(steps: list[float], values: list[float]) -> CurveFit:
     With fewer than 3 points the projection falls back to the last value (no
     extrapolation), and ``ok`` is False.
     """
-    pts = [(float(s), float(v)) for s, v in zip(steps, values, strict=True)]
+    # Drop non-finite points (a NaN/inf reading must never corrupt the projection).
+    pts = [
+        (float(s), float(v))
+        for s, v in zip(steps, values, strict=True)
+        if math.isfinite(s) and math.isfinite(v)
+    ]
     n = len(pts)
     last = pts[-1][1] if pts else 0.0
     if n < 3:
@@ -82,14 +87,21 @@ def fit_learning_curve(steps: list[float], values: list[float]) -> CurveFit:
             best = (a, b, sse, c)
     a, b, sse, c = best  # type: ignore[misc]
 
-    # The asymptote a is the t->inf projection. Guard against a degenerate fit
-    # (flat/!decaying) by falling back to the last observed value.
-    projected = a if c > 0 and abs(b) > 1e-9 else last
-    # Keep the projection within a sane band of the observed range so a wild
-    # extrapolation never dominates a decision.
-    lo = min(ys) - (max(ys) - min(ys) + 1e-6)
-    hi = max(ys) + (max(ys) - min(ys) + 1e-6)
-    projected = max(lo, min(hi, projected))
+    # The asymptote a is the t->inf projection. Guard against a degenerate or
+    # non-finite fit by falling back to the last observed value.
+    projected = a if (math.isfinite(a) and c > 0 and abs(b) > 1e-9) else last
+    # Bound the projection so an ill-conditioned short-curve fit never extrapolates
+    # wildly, while still allowing a slow curve to project past its tiny observed
+    # window: allow up to ~3x the observed range (capped) beyond it.
+    rng = max(ys) - min(ys)
+    band = min(max(rng, abs(b) if math.isfinite(b) else 0.0), 3.0 * rng + 0.05) + 1e-6
+    projected = max(min(ys) - band, min(max(ys) + band, projected))
+    if not math.isfinite(projected):
+        projected = last
 
-    return CurveFit(a=a, b=b, c=c, sse=sse, n=n, projected_final=projected,
-                    last_value=last, trend=projected - last)
+    return CurveFit(
+        a=a if math.isfinite(a) else last,
+        b=b if math.isfinite(b) else 0.0,
+        c=c, sse=sse if math.isfinite(sse) else 0.0, n=n,
+        projected_final=projected, last_value=last, trend=projected - last,
+    )

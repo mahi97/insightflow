@@ -98,3 +98,17 @@ def test_factors_include_projection():
     state = _state_with_running(method_proj=0.82, baseline_val=0.72)
     d = _decide(state)
     assert "projected_final" in d.factors
+
+
+def test_projected_tie_does_not_promote():
+    # Projected equals the baseline -> not a "clear beat"; must not promote.
+    state = _state_with_running(method_proj=0.72, baseline_val=0.72)
+    d = _decide(state)
+    assert d.action_type != ActionType.promote
+
+
+def test_sub_minimum_effect_does_not_promote():
+    # Projected beats the baseline by < minimum_effect_size (0.02) -> continue.
+    state = _state_with_running(method_proj=0.735, baseline_val=0.72)
+    d = _decide(state)
+    assert d.action_type != ActionType.promote

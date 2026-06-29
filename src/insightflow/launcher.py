@@ -103,11 +103,18 @@ class LocalLauncher:
         except subprocess.TimeoutExpired as exc:
             elapsed = float(self.timeout or 0.0)
             returncode = -1
-            stdout = exc.stdout or "" if isinstance(exc.stdout, str) else ""
+            # Recover whatever the process printed before timing out (bytes or str).
+            partial = exc.stdout
+            stdout = partial.decode(errors="replace") if isinstance(partial, bytes) else (partial or "")
 
         metrics = _parse_metrics_from_stdout(stdout)
         if not metrics and metrics_file:
-            metrics = _read_metrics_file(metrics_file)
+            # A relative INSIGHTFLOW_METRICS_FILE is written by the child under the
+            # launcher's cwd, so resolve it there (not the launcher's own cwd).
+            mf = Path(metrics_file)
+            if not mf.is_absolute() and self.cwd:
+                mf = Path(self.cwd) / mf
+            metrics = _read_metrics_file(str(mf))
 
         ok = returncode == 0 and bool(metrics)
         status = RunStatus.completed if ok else RunStatus.failed

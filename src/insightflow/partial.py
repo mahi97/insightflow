@@ -111,21 +111,37 @@ def monitor_partial(
     def oriented(value: float) -> float:
         return -value if direction_lower else value
 
-    # "Improving" / "declining" use where the curve is *headed*, not just slope.
-    improving = oriented(fit.trend) > 1e-4 or oriented(_slope(values)) > 0
-    declining = oriented(fit.trend) < -1e-4
+    # "Improving" / "declining" use where the curve is *headed* (the projection),
+    # falling back to slope only when there is no usable fit.
+    if fit.ok:
+        improving = oriented(fit.trend) > 1e-4
+        declining = oriented(fit.trend) < -1e-4
+    else:
+        improving = oriented(_slope(values)) > 0
+        declining = oriented(_slope(values)) < 0
 
-    # 2) Baseline available: judge the *projected* final against it.
+    # 2) Baseline available: judge the *projected* final against the claim's
+    #    minimum effect size, not just a bare sign.
     baseline = _baseline_value(state, exp, metric)
     if baseline is not None:
         gap = oriented(projected - baseline)
+        min_eff = linked[0].claim.minimum_effect_size if linked else 0.0
         factors["projected_gap_vs_baseline"] = round(gap, 4)
-        if gap < 0:
+        if gap < -1e-9:
             return PartialDecision(
                 ActionType.stop,
                 0.6,
                 f"Projected final ({projected:.4f}) trails the baseline ({baseline:.4f}); "
                 "the curve will not clear it, so stop rather than spend more compute.",
+                factors,
+            )
+        if gap < min_eff:
+            return PartialDecision(
+                ActionType.continue_,
+                0.45,
+                f"Projected above the baseline ({projected:.4f} vs {baseline:.4f}) but the "
+                f"gap ({gap:.4f}) is below the minimum effect ({min_eff:.4f}); continue to "
+                "see whether it clears the threshold.",
                 factors,
             )
         cell = exp.cell_key
@@ -135,15 +151,16 @@ def monitor_partial(
             return PartialDecision(
                 ActionType.continue_,
                 0.5,
-                f"Projected to beat the baseline ({projected:.4f} vs {baseline:.4f}) on a "
-                "claim-critical, under-seeded condition; continue to lock it in.",
+                f"Projected to clear the effect threshold ({projected:.4f} vs {baseline:.4f}) "
+                "on a claim-critical, under-seeded condition; continue to lock it in.",
                 factors,
             )
         return PartialDecision(
             ActionType.promote,
             0.5,
-            f"Projected to clearly beat the baseline ({projected:.4f} vs {baseline:.4f}); "
-            "promote and shift workers to uncovered conditions instead of more replication.",
+            f"Projected to beat the baseline by at least the minimum effect "
+            f"({projected:.4f} vs {baseline:.4f}); promote and shift workers to uncovered "
+            "conditions instead of more replication.",
             factors,
         )
 

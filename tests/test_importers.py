@@ -119,3 +119,25 @@ def test_import_mlflow_not_installed_message(monkeypatch):
     with pytest.raises(InsightFlowError) as exc:
         import_mlflow("exp", "accuracy")
     assert "uv add mlflow" in str(exc.value)
+
+
+def test_inf_metric_is_rejected(tmp_path):
+    csv = tmp_path / "r.csv"
+    csv.write_text("id,method,accuracy\nr1,m,1e400\n")  # 1e400 -> inf
+    with pytest.raises(InsightFlowError):
+        import_csv(csv, "accuracy")
+
+
+def test_malformed_jsonl_raises_clean_error(tmp_path):
+    p = tmp_path / "r.jsonl"
+    p.write_text('{"id":"a","accuracy":0.8}\nthis is not json\n')
+    with pytest.raises(InsightFlowError) as exc:
+        import_jsonl(p, "accuracy")
+    assert "malformed" in str(exc.value).lower()
+
+
+def test_non_dict_jsonl_line_raises(tmp_path):
+    p = tmp_path / "r.jsonl"
+    p.write_text("[1, 2, 3]\n")
+    with pytest.raises(InsightFlowError):
+        import_jsonl(p, "accuracy")

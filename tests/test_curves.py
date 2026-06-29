@@ -49,3 +49,15 @@ def test_projection_is_bounded_near_observed_range():
 def test_deterministic():
     steps, values = _curve(0.8, -0.3, 0.5, 10)
     assert fit_learning_curve(steps, values) == fit_learning_curve(steps, values)
+
+
+def test_non_finite_points_are_ignored_and_projection_stays_finite():
+    f = fit_learning_curve([1, 2, 3, 4, 5], [0.5, 0.6, 0.7, 0.8, float("nan")])
+    assert math.isfinite(f.projected_final)
+    f2 = fit_learning_curve([1, 2, 3], [float("inf"), 0.6, 0.7])
+    assert math.isfinite(f2.projected_final)
+
+
+def test_all_non_finite_falls_back():
+    f = fit_learning_curve([1, 2, 3], [float("nan"), float("inf"), float("-inf")])
+    assert not f.ok  # fewer than 3 finite points

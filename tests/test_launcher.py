@@ -53,3 +53,15 @@ def test_missing_command_raises():
     exp = exp.model_copy(update={"command": None})
     with pytest.raises(InsightFlowError):
         LocalLauncher().run(exp)
+
+
+def test_metrics_file_resolved_against_launcher_cwd(tmp_path, monkeypatch):
+    # The child writes a *relative* metrics file under the launcher's cwd; the
+    # launcher must read it there, not under the process's own cwd.
+    monkeypatch.setenv("INSIGHTFLOW_METRICS_FILE", "m.json")
+    exp = make_method("cifar10", 0)
+    cmd = f"{sys.executable} -c \"open('m.json','w').write('{{\\\"accuracy\\\": 0.7}}')\""
+    exp = exp.model_copy(update={"command": cmd})
+    result = LocalLauncher(cwd=str(tmp_path)).run(exp)
+    assert result.metrics == {"accuracy": 0.7}
+    assert result.status == RunStatus.completed

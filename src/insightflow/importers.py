@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -47,7 +48,8 @@ def _build_models(
 
     raw_value = metrics.get(metric)
     metric_value = _num(raw_value, default=float("nan")) if raw_value is not None else None
-    found = metric_value is not None and not (metric_value != metric_value)  # not None, not NaN
+    # Must be a real, finite number — reject None, NaN, and inf/-inf/overflow.
+    found = metric_value is not None and math.isfinite(metric_value)
     experiment = Experiment(
         id=run_id,
         method=method,
@@ -140,10 +142,19 @@ def import_jsonl(path: str | Path, metric: str) -> tuple[list[Experiment], list[
         raise InsightFlowError(f"JSONL file not found: {p}")
     records = []
     with open(p, encoding="utf-8") as fh:
-        for line in fh:
+        for lineno, line in enumerate(fh, start=1):
             line = line.strip()
-            if line:
-                records.append(json.loads(line))
+            if not line:
+                continue
+            try:
+                obj = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise InsightFlowError(f"{p.name}: malformed JSON on line {lineno}: {exc}") from exc
+            if not isinstance(obj, dict):
+                raise InsightFlowError(
+                    f"{p.name}: line {lineno} is not a JSON object (got {type(obj).__name__})."
+                )
+            records.append(obj)
     return _records_to_models(records, metric, RunSource.import_)
 
 
@@ -202,10 +213,14 @@ def import_mlflow(
 
     experiments, results = [], []
     any_metric = False
-    for run in list(runs)[:limit]:
+    seen: set[str] = set()
+    for i, run in enumerate(list(runs)[:limit]):
         params = dict(getattr(run.data, "params", {}) or {})
         metrics = dict(getattr(run.data, "metrics", {}) or {})
-        run_id = str(getattr(run.info, "run_id", None) or getattr(run.info, "run_uuid", "unknown"))
+        run_id = str(getattr(run.info, "run_id", None) or getattr(run.info, "run_uuid", "") or f"mlflow{i}")
+        while run_id in seen:  # keep ids unique even if MLflow returns blanks
+            run_id = f"{run_id}_{i}"
+        seen.add(run_id)
         status = _MLFLOW_STATE.get(str(getattr(run.info, "status", "FINISHED")), RunStatus.completed)
         exp, res, found = _build_models(run_id, params, metrics, metric, RunSource.import_, status)
         any_metric = any_metric or found

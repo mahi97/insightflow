@@ -75,11 +75,19 @@ def _arrival_order(state: State) -> list[RunResult]:
 
 def replay(state: State) -> ReplayResult:
     """Replay a project's known results and compare actual vs InsightFlow order."""
-    history = _arrival_order(state)
-    results_by_exp = {r.experiment_id: r for r in history}
+    ordered = _arrival_order(state)
+    # Dedup to one result per experiment (last occurrence wins) so the actual and
+    # InsightFlow trajectories — and the ground truth — all evaluate the SAME
+    # evidence per experiment. Otherwise duplicates make them compare different
+    # metric realities for the same id.
+    last_by_exp: dict[str, RunResult] = {}
+    for r in ordered:
+        last_by_exp[r.experiment_id] = r
+    history = [r for r in ordered if last_by_exp.get(r.experiment_id) is r]
+    results_by_exp = last_by_exp
 
-    # Ground truth: the decision the full history supports.
-    full = compute_claim_confidence(state)
+    # Ground truth: the decision the deduped full history supports.
+    full = compute_claim_confidence(_state_with(state, list(history)))
     gt = {c.claim_id: c.status.value for c in full.values() if c.status in _DECIDED}
 
     # Actual: reveal in real arrival order.

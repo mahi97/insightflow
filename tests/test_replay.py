@@ -53,3 +53,18 @@ def test_replay_with_no_decision_returns_empty_ground_truth():
     result = replay(state)
     assert result.ground_truth == {}
     assert result.runs_saved is None
+
+
+def test_replay_handles_duplicate_experiment_ids():
+    # Two completed results for the same experiment id must not break the
+    # apples-to-apples comparison (deduped to one evidence value per experiment).
+    state = _full_history_state()
+    dup_exp = state.experiments[0]
+    dup = make_result(dup_exp, 0.81).model_copy(
+        update={"run_id": "dup", "finished_at": "2026-01-01T00:99:00+00:00"}
+    )
+    state = state.model_copy(update={"results": [*state.results, dup]})
+    result = replay(state)
+    assert result.ground_truth == {"C1": "supported"}
+    assert result.insight_decided_at is not None
+    assert result.runs_saved >= 0
