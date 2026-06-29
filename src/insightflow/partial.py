@@ -7,14 +7,16 @@ impact*, not on current performance alone. A run that is doing great but can no
 longer change any claim is a candidate to stop; a mediocre run that sits on a
 claim's decision boundary may be worth continuing.
 
-This is a transparent heuristic stand-in for the freeze-thaw / learning-curve
-extrapolation models on the v0.2 roadmap (see ``docs/roadmap.md``).
+Decisions are made on the *projected final value* of the run, extrapolated from
+its partial curve by a deterministic saturating-exponential fit (``curves.py``) —
+a freeze-thaw-style judgement of where the run will end up, not just where it is.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from .curves import fit_learning_curve
 from .schemas import (
     ActionType,
     Experiment,
@@ -36,8 +38,13 @@ class PartialDecision:
     factors: dict[str, float] = field(default_factory=dict)
 
 
-def _trajectory(result: RunResult, metric: str) -> list[float]:
-    return [float(p[metric]) for p in result.partial_history if metric in p]
+def _steps_and_values(result: RunResult, metric: str) -> tuple[list[float], list[float]]:
+    steps, values = [], []
+    for i, p in enumerate(result.partial_history):
+        if metric in p:
+            steps.append(float(p.get("step", i)))
+            values.append(float(p[metric]))
+    return steps, values
 
 
 def _slope(values: list[float]) -> float:
@@ -69,17 +76,24 @@ def monitor_partial(
     evidence: dict[str, ClaimEvidence],
     policy: Policy,
 ) -> PartialDecision:
-    """Recommend an action for one in-flight run."""
+    """Recommend an action for one in-flight run, judged on the *projected* final
+    value (freeze-thaw learning-curve extrapolation), not just the current value."""
     linked = [evidence[c] for c in exp.claim_links if c in evidence]
     metric = next((ev.claim.target_metric for ev in linked), "accuracy")
-    traj = _trajectory(result, metric)
+    steps, values = _steps_and_values(result, metric)
 
-    if not traj:
+    if not values:
         return PartialDecision(ActionType.continue_, 0.2, "No partial metric yet; keep going.")
 
-    current = traj[-1]
-    slope = _slope(traj)
-    factors = {"current": current, "slope": slope}
+    current = values[-1]
+    fit = fit_learning_curve(steps, values)
+    projected = fit.projected_final
+    factors = {
+        "current": round(current, 4),
+        "projected_final": round(projected, 4),
+        "remaining": round(fit.trend, 4),
+        "curve_fit": 1.0 if fit.ok else 0.0,
+    }
 
     # 1) Does this run still matter for any claim?
     any_near_boundary = any(ev.confidence.near_boundary for ev in linked)
@@ -93,47 +107,44 @@ def monitor_partial(
         )
 
     direction_lower = bool(linked) and linked[0].claim.desired_direction.value == "lower"
-    baseline = _baseline_value(state, exp, metric)
 
     def oriented(value: float) -> float:
         return -value if direction_lower else value
 
-    improving = oriented(slope) > 0
-    declining = oriented(slope) < -1e-9
+    # "Improving" / "declining" use where the curve is *headed*, not just slope.
+    improving = oriented(fit.trend) > 1e-4 or oriented(_slope(values)) > 0
+    declining = oriented(fit.trend) < -1e-4
 
-    # 2) Baseline available: judge against it.
+    # 2) Baseline available: judge the *projected* final against it.
+    baseline = _baseline_value(state, exp, metric)
     if baseline is not None:
-        gap = oriented(current - baseline)
-        factors["gap_vs_baseline"] = gap
-        if gap < 0 and not improving:
+        gap = oriented(projected - baseline)
+        factors["projected_gap_vs_baseline"] = round(gap, 4)
+        if gap < 0:
             return PartialDecision(
                 ActionType.stop,
                 0.6,
-                "Trailing the baseline with no upward trend; unlikely to support the "
-                "claim, so stop rather than spend more compute.",
+                f"Projected final ({projected:.4f}) trails the baseline ({baseline:.4f}); "
+                "the curve will not clear it, so stop rather than spend more compute.",
                 factors,
             )
-        if gap > 0 and not declining:
-            cell = exp.cell_key
-            seeds = linked[0].seeds_per_cell.get(cell, 0) if linked else 0
-            required = linked[0].claim.required_seeds if linked else 3
-            if linked and linked[0].claim.importance >= 0.7 and seeds < required:
-                return PartialDecision(
-                    ActionType.continue_,
-                    0.5,
-                    "Beating the baseline on a claim-critical, under-seeded condition; "
-                    "continue to lock in the result.",
-                    factors,
-                )
+        cell = exp.cell_key
+        seeds = linked[0].seeds_per_cell.get(cell, 0) if linked else 0
+        required = linked[0].claim.required_seeds if linked else 3
+        if linked and linked[0].claim.importance >= 0.7 and seeds < required and improving:
             return PartialDecision(
-                ActionType.promote,
+                ActionType.continue_,
                 0.5,
-                "Clearly beats the baseline; promote this result and shift workers to "
-                "uncovered conditions instead of more replication.",
+                f"Projected to beat the baseline ({projected:.4f} vs {baseline:.4f}) on a "
+                "claim-critical, under-seeded condition; continue to lock it in.",
                 factors,
             )
         return PartialDecision(
-            ActionType.continue_, 0.4, "Still informative near the decision boundary; continue.", factors
+            ActionType.promote,
+            0.5,
+            f"Projected to clearly beat the baseline ({projected:.4f} vs {baseline:.4f}); "
+            "promote and shift workers to uncovered conditions instead of more replication.",
+            factors,
         )
 
     # 3) No baseline yet.
@@ -141,16 +152,16 @@ def monitor_partial(
         return PartialDecision(
             ActionType.launch_baseline,
             0.6,
-            "Method looks strong but there is no baseline to compare against; launch the "
-            "baseline so the claim can actually be decided.",
+            f"Projected final {projected:.4f} looks strong but there is no baseline to "
+            "compare against; launch the baseline so the claim can be decided.",
             factors,
         )
     if declining:
         return PartialDecision(
             ActionType.pause,
             0.5,
-            "Flat or declining early curve with low decision value; pause to reconsider "
-            "before spending the full budget.",
+            "Curve is flat or declining with low decision value; pause before spending "
+            "the full budget.",
             factors,
         )
     return PartialDecision(ActionType.continue_, 0.3, "Early but inconclusive; continue.", factors)

@@ -113,12 +113,13 @@ of information). It is deterministic, adversarially verified, and calibrated
 default; see `docs/concepts.md`. Remaining: a fully hierarchical treatment of
 within-cell variance (currently a plug-in standard error).
 
-**Real learning-curve extrapolation for partial runs (planned).** Replace the current
-partial-run heuristic with a proper learning-curve model (e.g., freeze-thaw or
-a simple parametric fit) that extrapolates final performance from
-`partial_history`. This lets the scheduler decide more reliably whether to
-continue or kill a partial run based on projected final value, not just curve
-shape.
+**Learning-curve extrapolation for partial runs — DONE.** `curves.py` fits a
+saturating exponential `y(t) = a + b*exp(-c*t)` to a run's `partial_history`
+(deterministic grid search over the decay rate, closed-form least squares for the
+rest) and reads off the projected final value. `partial.py` now decides
+continue/stop/promote/launch_baseline on that *projected* value vs the baseline,
+not just the current value — a freeze-thaw-style judgement. Future: a Bayesian
+posterior over the curve (uncertainty in the projection) rather than a point fit.
 
 ### Additional importers
 
