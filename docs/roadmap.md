@@ -169,15 +169,14 @@ A REST API wrapping the ledger and scheduler, so multiple users or external
 tools can query state, submit results, and retrieve plans without a shared
 filesystem. This is a prerequisite for the web dashboard and MCP tool.
 
-### MCP tool
+### MCP server — DONE (opt-in)
 
-An MCP (Model Context Protocol) server that exposes InsightFlow's core
-operations — `state`, `plan`, `log-result` — as MCP tools. This would allow
-Claude Desktop, Cursor, and other MCP-compatible agents to interact with
-InsightFlow natively without using the shell.
-
-There is no MCP server or MCP tool in v0.1. The `AGENTS.md` file acknowledges
-this explicitly.
+`src/insightflow/mcp_server.py` exposes the core operations — `state`, `plan`,
+`explain`, `validate`, `log_result`, `replay` — as MCP tools, so Claude Desktop,
+Cursor, Codex, and other MCP agents can use InsightFlow natively. Install with
+`uv sync --extra mcp` and run `insightflow-mcp` (wired via `.mcp.json`). The tool
+*logic* is pure and unit-tested; the runtime wrapper is a thin optional layer.
+Remaining: a hosted/remote multi-user server (see below).
 
 ### Web dashboard
 

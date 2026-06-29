@@ -435,8 +435,8 @@ CSV/JSONL/MLflow importers, and offline replay. The following are still **not
 built**:
 
 - **Server / FastAPI / dashboard**: no web UI; CLI only.
-- **MCP tool**: agents use the CLI and the Claude Code plugin; a standalone MCP
-  server is planned.
+- **MCP server**: available (opt-in) — `uv sync --extra mcp` then `insightflow-mcp`
+  exposes the tools to any MCP agent. A hosted/remote server is still future.
 - **Cluster launchers (Slurm / Ray) + live monitoring**: runs locally
   (`insightflow run`) or you launch on the cluster; cluster submission/polling is
   planned.

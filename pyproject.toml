@@ -32,6 +32,8 @@ dependencies = [
 
 [project.optional-dependencies]
 wandb = ["wandb>=0.16"]
+mlflow = ["mlflow>=2.0"]
+mcp = ["mcp>=1.0"]
 dev = [
     "pytest>=8.0",
     "ruff>=0.5",
@@ -42,6 +44,7 @@ dev = [
 [project.scripts]
 insightflow = "insightflow.cli:app"
 insight = "insightflow.cli:app"
+insightflow-mcp = "insightflow.mcp_server:main"
 
 [project.urls]
 Homepage = "https://github.com/mahi97/insightflow"

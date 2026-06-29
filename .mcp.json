@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "insightflow": {
+      "command": "insightflow-mcp",
+      "args": [],
+      "env": {}
+    }
+  }
+}
