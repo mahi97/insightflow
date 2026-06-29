@@ -430,6 +430,51 @@ def run_cmd(
         )
 
 
+@app.command("import-csv")
+def import_csv_cmd(
+    path: str = typer.Option(..., "--path", help="CSV or JSONL file (one run per row/line)."),
+    metric: str = typer.Option(..., "--metric", help="Metric column/field to import."),
+    project_dir: str | None = ProjectDirOpt,
+) -> None:
+    """Import runs from a local CSV or JSONL file into the ledger."""
+    from .importers import import_csv, import_jsonl
+
+    try:
+        ledger = _ledger(project_dir)
+        loader = import_jsonl if path.endswith((".jsonl", ".ndjson")) else import_csv
+        experiments, results = loader(path, metric)
+        n_exp, n_res = ledger.merge_imported_runs(experiments, results)
+    except InsightFlowError as exc:
+        _fail(str(exc))
+        return
+    typer.secho(f"Imported {n_res} run(s) from {path}.", fg=typer.colors.GREEN)
+    typer.echo("Link them to claims in configs/experiments.yaml, then run `uv run insightflow plan`.")
+
+
+@app.command("import-mlflow")
+def import_mlflow_cmd(
+    experiment_name: str = typer.Option(..., "--experiment-name", help="MLflow experiment name."),
+    metric: str = typer.Option(..., "--metric", help="Metric to import."),
+    tracking_uri: str | None = typer.Option(None, "--tracking-uri", help="MLflow tracking URI."),
+    limit: int = typer.Option(200, "--limit", help="Max runs to import."),
+    project_dir: str | None = ProjectDirOpt,
+) -> None:
+    """Import runs from an MLflow experiment (degrades gracefully if mlflow is absent)."""
+    from .importers import import_mlflow
+
+    try:
+        ledger = _ledger(project_dir)
+        experiments, results = import_mlflow(
+            experiment_name, metric, tracking_uri=tracking_uri, limit=limit
+        )
+        n_exp, n_res = ledger.merge_imported_runs(experiments, results)
+    except InsightFlowError as exc:
+        _fail(str(exc))
+        return
+    typer.secho(f"Imported {n_res} run(s) from MLflow '{experiment_name}'.", fg=typer.colors.GREEN)
+    typer.echo("Link them to claims in configs/experiments.yaml, then run `uv run insightflow plan`.")
+
+
 @app.command("import-wandb")
 def import_wandb_cmd(
     entity: str = typer.Option(..., "--entity", help="W&B entity (team/user)."),
