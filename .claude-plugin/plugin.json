@@ -1,6 +1,6 @@
 {
   "name": "insightflow",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Adaptive experiment scheduler for ML research: skills, a guard hook, and slash commands that drive the InsightFlow CLI to optimize time-to-insight.",
   "author": { "name": "InsightFlow contributors" },
   "homepage": "https://github.com/mahi97/insightflow",

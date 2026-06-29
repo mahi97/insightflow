@@ -311,12 +311,29 @@ def generate_noisy_seeds(seed: int = 0, name: str = "noisy_seeds") -> SimProject
     return SimProject(seed=seed, name=name, claims=[claim], experiments=exps, truth=truth)
 
 
+def generate_refuted(seed: int = 0, name: str = "refuted") -> SimProject:
+    """The method genuinely does NOT beat the baseline (true effect ~ -0.05). The
+    correct decision is 'refuted'; the scheduler should reach it efficiently
+    instead of chasing a non-existent improvement."""
+    claim = Claim(id="C1", statement="method_a beats baseline_a across datasets.", importance=0.9,
+                  minimum_effect_size=0.02, required_seeds=3, reviewer_risk=0.7)
+    truth: dict[tuple[str, str], CellTruth] = {}
+    exps: list[Experiment] = []
+    for ds, base in [("cifar10", 0.72), ("cifar100", 0.55), ("svhn", 0.88)]:
+        _set_cell(truth, ds, base, -0.05, 0.006)  # method WORSE than baseline
+        for s in range(4):
+            exps.append(_method(ds, s, ["C1"], 1.0, 1.0))
+        exps.append(_baseline(ds, 0, ["C1"], 0.8, 0.8))
+    return SimProject(seed=seed, name=name, claims=[claim], experiments=exps, truth=truth)
+
+
 SCENARIOS: dict[str, Callable[[int, str], SimProject]] = {
     "breadth": generate_project,
     "expensive_branch": generate_expensive_branch,
     "dependency_unlock": generate_dependency_unlock,
     "reviewer_baseline": generate_reviewer_baseline,
     "noisy_seeds": generate_noisy_seeds,
+    "refuted": generate_refuted,
 }
 
 

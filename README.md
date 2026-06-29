@@ -330,6 +330,50 @@ uv run insightflow log-result \
 
 `--metric` is repeatable. `--status` accepts: `completed`, `failed`, `running`.
 
+#### `run` (local launcher)
+
+Run an experiment's `command` locally and record the result. Dry-run by default;
+pass `--execute` to actually launch. The command must print a JSON metrics line
+(e.g. `{"accuracy": 0.81}`) or write one to `$INSIGHTFLOW_METRICS_FILE`.
+
+```bash
+uv run insightflow run [--experiment-id ID] [--execute] [-C DIR]
+```
+
+#### `import-csv` / `import-mlflow`
+
+Import runs from a local CSV/JSONL file, or from an MLflow experiment (MLflow is
+an optional dependency; degrades gracefully).
+
+```bash
+uv run insightflow import-csv --path runs.csv --metric accuracy [-C DIR]
+uv run insightflow import-mlflow --experiment-name my-exp --metric accuracy \
+  [--tracking-uri http://localhost:5000] [--limit 200] [-C DIR]
+```
+
+#### `replay` (offline evaluation)
+
+Counterfactually replay a project's already-known results and report whether
+InsightFlow would have reached the full-history decision in fewer runs.
+
+```bash
+uv run insightflow replay [-C DIR] [--format json]
+```
+
+#### `benchmark --all-scenarios`
+
+Run all six task scenarios (breadth, expensive-branch, dependency-unlock,
+reviewer-baseline, noisy-seeds, refuted) and report runs/compute saved plus a
+robustness summary vs the oracle.
+
+```bash
+uv run insightflow benchmark --all-scenarios [--projects N]
+```
+
+> **Bayesian mode (opt-in).** Set `confidence_model: bayes` in `configs/policy.yaml`
+> for a calibrated value-of-information scorer (ECE 0.0119); see
+> [docs/concepts.md](docs/concepts.md).
+
 ---
 
 ## W&B import
@@ -383,15 +427,20 @@ For full agent operating rules, see [AGENTS.md](AGENTS.md). For Claude Code-spec
 
 ---
 
-## Current limitations (v0.1)
+## Current limitations (v0.2)
 
-The following are **not yet built**:
+Built in v0.2: a calibrated Bayesian/value-of-information scorer (opt-in),
+freeze-thaw learning-curve extrapolation for partial runs, a local launcher,
+CSV/JSONL/MLflow importers, and offline replay. The following are still **not
+built**:
 
 - **Server / FastAPI / dashboard**: no web UI; CLI only.
-- **MCP tool**: not yet implemented; agents use the CLI.
-- **Slurm / Ray launchers**: InsightFlow recommends; humans or scripts launch.
-- **Bayesian / Value-of-Information scoring**: the current confidence model is a deterministic heuristic. Bayesian VOI scoring is planned for v0.2 (see [docs/concepts.md](docs/concepts.md)).
-- **Offline replay on real experiment logs**: not yet implemented.
+- **MCP tool**: agents use the CLI and the Claude Code plugin; a standalone MCP
+  server is planned.
+- **Cluster launchers (Slurm / Ray) + live monitoring**: runs locally
+  (`insightflow run`) or you launch on the cluster; cluster submission/polling is
+  planned.
+- **Multi-user lab mode**: single-project, single-user.
 Documentation (`docs/`): [install_and_use.md](docs/install_and_use.md),
 [architecture.md](docs/architecture.md), [concepts.md](docs/concepts.md),
 [scheduling_policy.md](docs/scheduling_policy.md), [wandb.md](docs/wandb.md),
