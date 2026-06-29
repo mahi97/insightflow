@@ -45,8 +45,9 @@ def _build_models(
     runtime = _num(params.get("wall_time", params.get("time", params.get("runtime", 0.0))))
     cost = _num(params.get("cost", params.get("expected_cost", runtime / 3600.0 if runtime else 0.0)))
 
-    value = metrics.get(metric)
-    found = value is not None
+    raw_value = metrics.get(metric)
+    metric_value = _num(raw_value, default=float("nan")) if raw_value is not None else None
+    found = metric_value is not None and not (metric_value != metric_value)  # not None, not NaN
     experiment = Experiment(
         id=run_id,
         method=method,
@@ -65,7 +66,7 @@ def _build_models(
         run_id=run_id,
         experiment_id=run_id,
         seed=seed,
-        metrics={metric: float(value)} if found else {},
+        metrics={metric: metric_value} if found and metric_value is not None else {},
         cost=max(cost, 0.0),
         wall_time=runtime,
         status=status,
@@ -126,7 +127,7 @@ def import_csv(path: str | Path, metric: str) -> tuple[list[Experiment], list[Ru
         for k in (metric, "seed", "cost", "expected_cost", "wall_time", "time", "runtime"):
             if k in r and r[k] not in (None, ""):
                 try:
-                    r[k] = float(r[k])  # type: ignore[assignment]
+                    r[k] = float(r[k])
                 except (TypeError, ValueError):
                     pass
     return _records_to_models(rows, metric, RunSource.import_)
