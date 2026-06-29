@@ -430,6 +430,52 @@ def run_cmd(
         )
 
 
+@app.command("replay")
+def replay_cmd(
+    project_dir: str | None = ProjectDirOpt,
+    format: str = FormatOpt,
+) -> None:
+    """Offline replay: would InsightFlow have decided the claims with fewer runs
+    than the order the (already-known) results were actually run in?"""
+    from .replay import replay
+
+    try:
+        ledger = _ledger(project_dir)
+        result = replay(ledger.load_state())
+    except InsightFlowError as exc:
+        _fail(str(exc))
+        return
+
+    if format == "json":
+        _echo_json(
+            {
+                "total_runs": result.total_runs,
+                "ground_truth": result.ground_truth,
+                "actual_decided_at": result.actual_decided_at,
+                "insight_decided_at": result.insight_decided_at,
+                "runs_saved": result.runs_saved,
+                "insight_order": result.insight_order,
+            }
+        )
+        return
+    if not result.ground_truth:
+        typer.echo("Replay: the complete history does not decide any claim, so there is "
+                   "nothing to replay against. Add more results or adjust the claims.")
+        return
+    typer.echo(f"# Offline replay ({result.total_runs} recorded runs)")
+    typer.echo("")
+    typer.echo(f"Ground-truth decision (from full history): {result.ground_truth}")
+    typer.echo(f"Actual order decided at run:     {result.actual_decided_at}")
+    typer.echo(f"InsightFlow order decided at run: {result.insight_decided_at}")
+    if result.runs_saved is not None:
+        verb = "saved" if result.runs_saved >= 0 else "cost extra"
+        typer.secho(
+            f"InsightFlow would have {verb} {abs(result.runs_saved)} run(s) to reach the "
+            "same decision.",
+            fg=typer.colors.GREEN if result.runs_saved >= 0 else typer.colors.YELLOW,
+        )
+
+
 @app.command("import-csv")
 def import_csv_cmd(
     path: str = typer.Option(..., "--path", help="CSV or JSONL file (one run per row/line)."),
