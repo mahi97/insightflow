@@ -156,17 +156,51 @@ def _effective_status(
     return own
 
 
+def _topo_order(claims: list[Claim]) -> list[Claim]:
+    """Claims ordered so dependencies come before dependents (cycle-safe)."""
+    by_id = {c.id: c for c in claims}
+    visited: set[str] = set()
+    order: list[Claim] = []
+
+    def visit(cid: str, stack: set[str]) -> None:
+        if cid in visited or cid not in by_id or cid in stack:
+            return
+        stack.add(cid)
+        for dep in by_id[cid].depends_on:
+            visit(dep, stack)
+        stack.discard(cid)
+        visited.add(cid)
+        order.append(by_id[cid])
+
+    for c in claims:
+        visit(c.id, set())
+    return order
+
+
 def assess_readiness(state: State) -> ReadinessReport:
     evidence = compute_claim_evidence(state)
     own_status = {cid: ev.confidence.status for cid, ev in evidence.items()}
-    rows: list[ClaimReadiness] = []
 
+    # Compute EFFECTIVE status in topological order, so a claim's dependencies are
+    # resolved (transitively) before it. Blocking uses the dependency's *effective*
+    # status, so a chain C0 -> C1 -> C2 propagates correctly (C0 supported once C2 is).
+    effective_by_id: dict[str, ClaimStatus] = {}
+    for claim in _topo_order(state.claims):
+        if claim.id not in own_status:
+            continue
+        own = own_status[claim.id]
+        eff_deps = {d: effective_by_id.get(d, own_status.get(d)) for d in claim.depends_on}
+        blockers = [d for d, s in eff_deps.items() if s != _SUPPORTED]
+        dep_refuted = any(s == ClaimStatus.refuted for s in eff_deps.values())
+        effective_by_id[claim.id] = _effective_status(own, claim.depends_on, blockers, dep_refuted)
+
+    rows: list[ClaimReadiness] = []
     for claim in state.claims:
         ev = evidence[claim.id]
         conf = ev.confidence
-        blockers = [d for d in claim.depends_on if own_status.get(d) != _SUPPORTED]
-        dep_refuted = any(own_status.get(d) == ClaimStatus.refuted for d in claim.depends_on)
-        effective = _effective_status(conf.status, claim.depends_on, blockers, dep_refuted)
+        eff_deps = {d: effective_by_id.get(d, own_status.get(d)) for d in claim.depends_on}
+        blockers = [d for d, s in eff_deps.items() if s != _SUPPORTED]
+        effective = effective_by_id.get(claim.id, conf.status)
         missing = sorted(ev.baseline_missing_cells)
         thin = bool(ev.observed_conditions) and ev.evidence_breadth < 1.0 and claim.importance >= 0.5
         insufficient = bool(ev.observed_conditions) and ev.seed_sufficiency < 1.0

@@ -75,3 +75,25 @@ def test_refuted_subclaim_makes_meta_claim_weak():
     by_id = {r.claim_id: r for r in report.claims}
     assert by_id["C1"].effective_status == ClaimStatus.refuted
     assert by_id["C0"].effective_status == ClaimStatus.weak
+
+
+def test_deep_claim_chain_propagates_transitively():
+    """C0 -> C1 -> C2: once C2 is supported, the effective status propagates up the
+    chain (C1 then C0) — blocking uses dependencies' EFFECTIVE status, not own."""
+    c0 = Claim(id="C0", type=ClaimType.main, importance=0.9, depends_on=["C1"])
+    c1 = Claim(id="C1", type=ClaimType.empirical, importance=0.8, depends_on=["C2"])
+    c2 = make_claim("C2", required_seeds=1)
+    exps, results = [], []
+    for ds in ("d1", "d2"):  # C2 fully observed and supported
+        m = make_method(ds, 0, claims=("C2",), status=ExperimentStatus.completed)
+        m = m.model_copy(update={"id": f"m_{ds}"})
+        b = make_baseline(ds, 0, claims=("C2",), status=ExperimentStatus.completed)
+        b = b.model_copy(update={"id": f"b_{ds}"})
+        exps += [m, b]
+        results += [make_result(m, 0.80), make_result(b, 0.72)]
+    report = assess_readiness(State(claims=[c0, c1, c2], experiments=exps, results=results, policy=Policy()))
+    by_id = {r.claim_id: r.effective_status for r in report.claims}
+    assert by_id["C2"] == ClaimStatus.supported
+    assert by_id["C1"] == ClaimStatus.supported  # meta, derived from C2
+    assert by_id["C0"] == ClaimStatus.supported  # meta, derived transitively from C1
+    assert report.paper_ready is True
