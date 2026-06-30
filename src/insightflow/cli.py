@@ -479,6 +479,7 @@ def replay_cmd(
                 "insight_decided_at": result.insight_decided_at,
                 "runs_saved": result.runs_saved,
                 "insight_order": result.insight_order,
+                "policy_comparison": result.policy_comparison,
             }
         )
         return
@@ -498,6 +499,10 @@ def replay_cmd(
             "same decision.",
             fg=typer.colors.GREEN if result.runs_saved >= 0 else typer.colors.YELLOW,
         )
+    typer.echo("")
+    typer.echo("Runs-to-decision by replay policy (lower is better):")
+    for pol, at in result.policy_comparison.items():
+        typer.echo(f"  {pol:14} {at if at is not None else '-'}")
 
 
 @app.command("import-csv")

@@ -327,6 +327,35 @@ def generate_refuted(seed: int = 0, name: str = "refuted") -> SimProject:
     return SimProject(seed=seed, name=name, claims=[claim], experiments=exps, truth=truth)
 
 
+def generate_mixed_multi_claim(seed: int = 0, name: str = "mixed_multi_claim") -> SimProject:
+    """Two claims with different evidence needs in one project: C1 (accuracy, truly
+    supported across datasets) and C2 (a second method's robustness, truly refuted).
+    The correct project verdict requires deciding BOTH — supporting C1 while not
+    overclaiming C2. A single-objective scheduler that chases C1 alone, or treats
+    all claims alike, wastes runs."""
+    c1 = Claim(id="C1", statement="method_a beats baseline_a (accuracy).", importance=0.9,
+               minimum_effect_size=0.02, required_seeds=3, reviewer_risk=0.7)
+    c2 = Claim(id="C2", statement="method_b is more robust than baseline_a.", importance=0.7,
+               minimum_effect_size=0.02, required_seeds=3, reviewer_risk=0.6)
+    truth: dict[tuple[str, str], CellTruth] = {}
+    exps: list[Experiment] = []
+    for ds, base in [("cifar10", 0.72), ("cifar100", 0.55)]:
+        _set_cell(truth, ds, base, 0.06, 0.005)  # method_a clearly better -> C1 supported
+        for s in range(4):
+            exps.append(_method(ds, s, ["C1"], 1.0, 1.0))
+        exps.append(_baseline(ds, 0, ["C1"], 0.8, 0.8))
+    for ds, base in [("svhn", 0.88), ("stl10", 0.70)]:
+        cell = f"{ds}|default"
+        truth[("method_b", cell)] = CellTruth(mean=base - 0.05, sigma=0.006)  # method_b worse -> C2 refuted
+        truth[("baseline_a", cell)] = CellTruth(mean=base, sigma=0.004)
+        for s in range(4):
+            exps.append(Experiment(id=f"method_b_{ds}_s{s}", method="method_b", baseline="baseline_a",
+                                   dataset=ds, condition="default", seed=s, claim_links=["C2"],
+                                   expected_cost=1.0, expected_time=1.0, tags=["method"]))
+        exps.append(_baseline(ds, 0, ["C2"], 0.8, 0.8))
+    return SimProject(seed=seed, name=name, claims=[c1, c2], experiments=exps, truth=truth)
+
+
 SCENARIOS: dict[str, Callable[[int, str], SimProject]] = {
     "breadth": generate_project,
     "expensive_branch": generate_expensive_branch,
@@ -334,6 +363,7 @@ SCENARIOS: dict[str, Callable[[int, str], SimProject]] = {
     "reviewer_baseline": generate_reviewer_baseline,
     "noisy_seeds": generate_noisy_seeds,
     "refuted": generate_refuted,
+    "mixed_multi_claim": generate_mixed_multi_claim,
 }
 
 
@@ -444,6 +474,29 @@ def _pick_oracle(state: State, project: SimProject, ctx: RunnerContext) -> str |
     return max(pend, key=priority).id
 
 
+def _pick_baseline_first(state: State, project: SimProject, ctx: RunnerContext) -> str | None:
+    completed = state.completed_experiment_ids()
+    pend = _pending(state, completed)
+    pend.sort(key=lambda e: (not e.is_baseline, e.cell_key, e.seed))
+    return pend[0].id if pend else None
+
+
+def _insightflow_with(mods: dict) -> PolicyFn:
+    """An InsightFlow variant whose policy is modified (for ablations)."""
+
+    def pick(state: State, project: SimProject, ctx: RunnerContext) -> str | None:
+        s = state.model_copy(update={"policy": state.policy.model_copy(update=mods)})
+        plan = build_plan(s)
+        for action in plan.actions:
+            if action.action_type in (
+                ActionType.launch, ActionType.add_seed, ActionType.launch_baseline
+            ):
+                return action.experiment_id
+        return None
+
+    return pick
+
+
 POLICIES: dict[str, PolicyFn] = {
     "insightflow": _pick_insightflow,
     "grid": _pick_grid,
@@ -452,7 +505,17 @@ POLICIES: dict[str, PolicyFn] = {
     "random": _pick_random,
     "cheap_first": _pick_cheap_first,
     "fastest_first": _pick_fastest_first,
+    "baseline_first": _pick_baseline_first,
     "oracle": _pick_oracle,
+    # Ablations: InsightFlow with one component disabled (for the ablation table).
+    "ablate_reviewer_risk": _insightflow_with({"weight_reviewer_risk": 0.0}),
+    "ablate_breadth_penalty": _insightflow_with({"weight_premature_replication_penalty": 0.0}),
+    "ablate_cost": _insightflow_with({"lambda_cost": 0.0}),
+    "uncertainty_only": _insightflow_with({
+        "weight_decision_value": 0.0, "weight_dependency": 0.0, "weight_reviewer_risk": 0.0,
+        "weight_redundancy_penalty": 0.0, "weight_premature_replication_penalty": 0.0,
+        "weight_seed_value": 0.0,
+    }),
 }
 
 

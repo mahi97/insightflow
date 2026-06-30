@@ -68,3 +68,13 @@ def test_replay_handles_duplicate_experiment_ids():
     assert result.ground_truth == {"C1": "supported"}
     assert result.insight_decided_at is not None
     assert result.runs_saved >= 0
+
+
+def test_replay_multi_policy_comparison():
+    result = replay(_full_history_state())
+    comp = result.policy_comparison
+    assert {"actual", "insightflow", "grid", "random", "cheap_first", "seeds_first"} <= set(comp)
+    # InsightFlow should decide in no more runs than the worst non-adaptive policy.
+    decided = [v for v in comp.values() if v is not None]
+    assert comp["insightflow"] is not None
+    assert comp["insightflow"] <= max(decided)

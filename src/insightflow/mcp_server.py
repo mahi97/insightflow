@@ -130,6 +130,7 @@ def replay_tool(project_dir: str | None = None) -> dict[str, Any]:
         "actual_decided_at": result.actual_decided_at,
         "insight_decided_at": result.insight_decided_at,
         "runs_saved": result.runs_saved,
+        "policy_comparison": result.policy_comparison,
     }
 
 

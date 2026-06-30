@@ -38,7 +38,9 @@ def _pct_saved(insight: float | None, baseline: float | None) -> float | None:
     return round(100.0 * (baseline - insight) / baseline, 1)
 
 
-NAIVE = ["grid", "all_seeds_first", "all_tasks_first", "random", "cheap_first", "fastest_first"]
+NAIVE = ["grid", "all_seeds_first", "all_tasks_first", "random", "cheap_first",
+         "fastest_first", "baseline_first"]
+ABLATIONS = ["ablate_reviewer_risk", "ablate_breadth_penalty", "ablate_cost", "uncertainty_only"]
 
 
 def run_scenarios(
@@ -99,7 +101,7 @@ def run_scenarios(
     # WORST-case ratio vs the oracle. A naive policy can tie InsightFlow on the one
     # task it suits, but its worst-case ratio exposes the task where it fails.
     robustness_rows = []
-    for p in ["oracle", "insightflow", *NAIVE]:
+    for p in ["oracle", "insightflow", *ABLATIONS, *NAIVE]:
         decided = [per_scenario[s][p]["decided"] for s in names]
         ratios = [
             per_scenario[s][p]["decided"] / per_scenario[s]["oracle"]["decided"]

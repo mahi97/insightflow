@@ -18,7 +18,8 @@ The gap is how many runs InsightFlow would have saved on this real project.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import random
+from dataclasses import dataclass, field
 
 from .scheduler import build_plan
 from .schemas import (
@@ -30,6 +31,7 @@ from .schemas import (
     State,
 )
 from .scoring import compute_claim_confidence
+from .utils import stable_hash
 
 _DECIDED = (ClaimStatus.supported, ClaimStatus.refuted)
 
@@ -42,6 +44,46 @@ class ReplayResult:
     insight_decided_at: int | None
     runs_saved: int | None
     insight_order: list[str]
+    # runs-to-decision for each ordering policy on the same history (None = never).
+    policy_comparison: dict[str, int | None] = field(default_factory=dict)
+
+
+def _reveal_until_decided(
+    state: State, ordered: list[RunResult], gt: dict[str, str]
+) -> int | None:
+    """Reveal results in the given order; return the step at which gt is reached."""
+    revealed: list[RunResult] = []
+    for i, r in enumerate(ordered, start=1):
+        revealed.append(r)
+        if gt and _decided(_state_with(state, revealed), gt):
+            return i
+    return None
+
+
+def _ordered_history(
+    state: State, history: list[RunResult], policy: str
+) -> list[RunResult]:
+    """A fixed ordering of the (deduped) history for a non-adaptive replay policy."""
+    exps = {e.id: e for e in state.experiments}
+    if policy == "grid":
+        rank = {e.id: i for i, e in enumerate(state.experiments)}
+        return sorted(history, key=lambda r: rank.get(r.experiment_id, 1 << 30))
+    if policy == "random":
+        rng = random.Random(int(stable_hash([r.run_id for r in history], 12), 16))
+        items = list(history)
+        rng.shuffle(items)
+        return items
+    if policy == "cheap_first":
+        return sorted(history, key=lambda r: (r.cost, r.experiment_id))
+    if policy == "seeds_first":
+        return sorted(
+            history,
+            key=lambda r: (
+                exps[r.experiment_id].cell_key if r.experiment_id in exps else r.experiment_id,
+                r.seed,
+            ),
+        )
+    return list(history)  # "actual"
 
 
 def _state_with(base: State, results: list[RunResult]) -> State:
@@ -128,6 +170,15 @@ def replay(state: State) -> ReplayResult:
     runs_saved = (
         actual_at - insight_at if (actual_at is not None and insight_at is not None) else None
     )
+
+    # Multi-policy comparison on the same history (non-adaptive orderings).
+    comparison: dict[str, int | None] = {
+        "actual": actual_at,
+        "insightflow": insight_at,
+    }
+    for pol in ("grid", "random", "cheap_first", "seeds_first"):
+        comparison[pol] = _reveal_until_decided(state, _ordered_history(state, history, pol), gt)
+
     return ReplayResult(
         total_runs=len(history),
         ground_truth=gt,
@@ -135,4 +186,5 @@ def replay(state: State) -> ReplayResult:
         insight_decided_at=insight_at,
         runs_saved=runs_saved,
         insight_order=order,
+        policy_comparison=comparison,
     )

@@ -60,3 +60,20 @@ def test_simulate_result_for_is_deterministic_per_seed():
     r1 = simulate_result_for(exp, project_seed=3)
     r2 = simulate_result_for(exp, project_seed=3)
     assert r1.metrics == r2.metrics
+
+
+def test_mixed_multi_claim_scenario_decides_both_claims():
+    project = generate_project  # noqa: F841  (keep import usage stable)
+    from insightflow.simulator import SCENARIOS
+    p = SCENARIOS["mixed_multi_claim"](0, "m")
+    gt = {k: v.value for k, v in p.ground_truth_statuses().items()}
+    assert gt == {"C1": "supported", "C2": "refuted"}
+    r = run_policy(SCENARIOS["mixed_multi_claim"](0, "m"), "insightflow", 40)
+    assert r.correct
+
+
+def test_ablation_policies_run():
+    from insightflow.simulator import POLICIES, SCENARIOS
+    for pol in ("baseline_first", "ablate_reviewer_risk", "uncertainty_only"):
+        assert pol in POLICIES
+        run_policy(SCENARIOS["breadth"](0, "b"), pol, 30)  # must not crash
