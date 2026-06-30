@@ -120,3 +120,18 @@ def test_bayes_one_dataset_does_not_prove_generality(cifar10_observed_state):
     c1 = next(c for c in plan.claim_confidence if c.claim_id == "C1")
     assert c1.status != ClaimStatus.supported  # only 1 of 3 datasets observed
     assert 0.0 <= c1.confidence <= 1.0
+
+
+def test_expected_voi_quadrature_is_positive_diminishing_and_deterministic():
+    from insightflow.bayes import expected_voi_new_cell
+    claim = make_claim("C1", minimum_effect_size=0.02)
+    K = 4
+    # EVI of the first observed cell (none yet) vs after 3 cells already observed.
+    evi_first = expected_voi_new_cell([], [], K, SE2, claim, POLICY)
+    evi_later = expected_voi_new_cell([0.06, 0.06, 0.06], [SE2] * 3, K, SE2, claim, POLICY)
+    assert evi_first > 0.0
+    assert evi_first > evi_later  # diminishing as the posterior tightens
+    assert 0.0 <= evi_first <= 1.0
+    # Deterministic (fixed Gauss-Hermite grid).
+    assert expected_voi_new_cell([0.05], [SE2], K, SE2, claim, POLICY) == \
+        expected_voi_new_cell([0.05], [SE2], K, SE2, claim, POLICY)

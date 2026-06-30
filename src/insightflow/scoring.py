@@ -28,7 +28,13 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
-from .bayes import Posterior, evoi, population_posterior, status_from_posterior
+from .bayes import (
+    Posterior,
+    evoi,
+    expected_voi_new_cell,
+    population_posterior,
+    status_from_posterior,
+)
 from .schemas import (
     ActionType,
     Claim,
@@ -415,13 +421,15 @@ class Scorer:
         return 1.0 - 1.0 / (1.0 + raw)  # saturating in [0, 1)
 
     # -- Bayesian (value-of-information) terms ------------------------------
-    def _bayes_posterior_after(self, exp: Experiment, ev: ClaimEvidence) -> tuple[float, float]:
-        """Return (current p_supported, p_supported after this action) for ``ev``.
+    def _bayes_evi(self, exp: Experiment, ev: ClaimEvidence) -> float:
+        """Normalised Expected Value of Information of this action for ``ev``.
 
-        The hypothetical observation is taken at the current posterior mean
-        (pre-posterior expectation), so only the *variance* reduction drives EVOI.
-        A baseline that completes a method-observed cell, or a new condition, adds
-        a cell; an extra seed only shrinks one cell's within-noise.
+        * Extra seed on an existing cell: variance reduction only (the observation
+          is a re-measurement, not a new cell) -> point estimate, diminishing.
+        * Baseline completing a method-observed cell: a realized new effect cell ->
+          faithful preposterior EVI integrated over the predictive (full credit).
+        * Speculative new condition (pair not yet complete): the same EVI at half
+          credit, since the baseline still has to follow.
         """
         assert ev.posterior is not None
         within = self.policy.within_seed_sd
@@ -430,33 +438,23 @@ class Scorer:
         se2s = list(ev.cell_se2.values())
         cells = list(ev.cell_effects.keys())
         post = ev.posterior
-        discount = 1.0
 
         if cell in ev.cell_effects:
-            # Extra seed on an existing effect cell: shrink within-noise (diminishing).
             idx = cells.index(cell)
             n_m = max(1, ev.seeds_per_cell.get(cell, 1))
-            new_se2 = list(se2s)
-            new_se2[idx] = se2s[idx] * (n_m / (n_m + 1.0))
-            after = population_posterior(effects, new_se2, ev.total_conditions, ev.claim, self.policy)
-        elif exp.is_baseline and cell in ev.observed_conditions:
-            # Baseline that *completes* a method-observed cell -> realizes a new cell.
+            ns = list(se2s)
+            ns[idx] = se2s[idx] * (n_m / (n_m + 1.0))
+            after = population_posterior(effects, ns, ev.total_conditions, ev.claim, self.policy)
+            return evoi(post.p_supported, after.p_supported)
+        if exp.is_baseline and cell in ev.observed_conditions:
             n_m = max(1, ev.seeds_per_cell.get(cell, 1))
-            after = population_posterior(
-                effects + [post.mean], se2s + [within**2 * (1.0 / n_m + 1.0)],
-                ev.total_conditions, ev.claim, self.policy,
+            return expected_voi_new_cell(
+                effects, se2s, ev.total_conditions, within**2 * (1.0 / n_m + 1.0),
+                ev.claim, self.policy,
             )
-        else:
-            # Speculative new condition (method, or baseline before its method):
-            # half-credit, because the pair is not yet complete.
-            discount = 0.5
-            after = population_posterior(
-                effects + [post.mean], se2s + [within**2 * 2.0],
-                ev.total_conditions, ev.claim, self.policy,
-            )
-        # Blend toward the current p by the discount (speculative actions count less).
-        p_after = post.p_supported + discount * (after.p_supported - post.p_supported)
-        return post.p_supported, p_after
+        return 0.5 * expected_voi_new_cell(
+            effects, se2s, ev.total_conditions, within**2 * 2.0, ev.claim, self.policy
+        )
 
     def _bayes_terms(self, exp: Experiment, action_type: ActionType) -> dict[str, float]:
         dv, rr = [], []
@@ -465,8 +463,7 @@ class Scorer:
             if ev is None or ev.posterior is None:
                 continue
             cell = exp.cell_key
-            p_before, p_after = self._bayes_posterior_after(exp, ev)
-            dv.append(ev.claim.importance * evoi(p_before, p_after))
+            dv.append(ev.claim.importance * self._bayes_evi(exp, ev))
             is_missing_baseline = (
                 exp.is_baseline and cell in ev.observed_conditions and cell not in ev.cell_effects
             )

@@ -110,6 +110,52 @@ def evoi(p_before: float, p_after: float) -> float:
     return max(0.0, decision_uncertainty(p_before) - decision_uncertainty(p_after)) / 0.25
 
 
+# 5-point Gauss-Hermite nodes/weights for E[g(y)] under y ~ Normal(m, s^2):
+#   E[g] ~= (1/sqrt(pi)) * sum_i w_i * g(m + sqrt(2)*s*x_i)
+# Deterministic (fixed grid), so the EVI stays reproducible.
+_GH5_X = (-2.0201828705, -0.9585724646, 0.0, 0.9585724646, 2.0201828705)
+_GH5_W = (0.0199532421, 0.3936193232, 0.9453087205, 0.3936193232, 0.0199532421)
+_SQRT_PI = math.sqrt(math.pi)
+
+
+def expected_voi_new_cell(
+    effects: list[float],
+    se2s: list[float],
+    total_conditions: int,
+    new_se2: float,
+    claim: Claim,
+    policy: Policy,
+) -> float:
+    """Faithful preposterior Expected Value of Information of observing one *new*
+    effect cell, integrating over the predictive of the new observation y.
+
+        EVI = U(current) - E_y[ U(posterior after observing y) ]
+
+    where U(p) = p(1-p) is decision uncertainty and y is drawn from the predictive
+    distribution of a new cell's effect. The expectation is computed by 5-point
+    Gauss-Hermite quadrature (deterministic). Returned normalised to [0, 1].
+
+    Unlike a point estimate at the mean, this captures that a *surprising* y can
+    flip the decision, which is exactly the information an action can buy.
+    """
+    p0 = population_posterior(effects, se2s, total_conditions, claim, policy)
+    u0 = decision_uncertainty(p0.p_supported)
+
+    sigma_b2 = policy.between_condition_sd**2
+    # Predictive variance of a new cell's observed effect: posterior uncertainty in
+    # the mean + between-condition spread + the new cell's within-noise.
+    pred_sd = math.sqrt(max(p0.var + sigma_b2 + max(new_se2, _EPS), _EPS))
+
+    expected_u = 0.0
+    for x, w in zip(_GH5_X, _GH5_W, strict=True):
+        y = p0.mean + _SQRT2 * pred_sd * x
+        p1 = population_posterior(effects + [y], se2s + [new_se2], total_conditions, claim, policy)
+        expected_u += w * decision_uncertainty(p1.p_supported)
+    expected_u /= _SQRT_PI
+
+    return max(0.0, u0 - expected_u) / 0.25
+
+
 def status_from_posterior(posterior: Posterior, policy: Policy) -> tuple[str, bool]:
     """Map a posterior to a claim status and a near-boundary flag."""
     t = policy.decision_prob_threshold
