@@ -51,6 +51,18 @@ def _load_list(path: Path, key: str) -> list[dict]:
     return data
 
 
+def _format_pyd_error(exc: PydanticValidationError, where: str) -> str:
+    """Turn a pydantic error into an actionable message (highlights YAML typos)."""
+    parts = []
+    for err in exc.errors():
+        loc = ".".join(str(x) for x in err["loc"]) or "(root)"
+        if err["type"] == "extra_forbidden":
+            parts.append(f"unknown field '{loc}' (typo? check the spelling)")
+        else:
+            parts.append(f"{loc}: {err['msg']}")
+    return f"{where} is invalid: " + "; ".join(parts)
+
+
 def load_claims(project_dir: str | Path) -> list[Claim]:
     raw = _load_list(config_dir(project_dir) / CONFIG_FILES["claims"], "claims")
     out = []
@@ -58,7 +70,7 @@ def load_claims(project_dir: str | Path) -> list[Claim]:
         try:
             out.append(Claim(**item))
         except PydanticValidationError as exc:
-            raise ConfigError(f"claims.yaml entry #{i + 1} is invalid: {exc}") from exc
+            raise ConfigError(_format_pyd_error(exc, f"claims.yaml entry #{i + 1}")) from exc
     return out
 
 
@@ -69,7 +81,7 @@ def load_experiments(project_dir: str | Path) -> list[Experiment]:
         try:
             out.append(Experiment(**item))
         except PydanticValidationError as exc:
-            raise ConfigError(f"experiments.yaml entry #{i + 1} is invalid: {exc}") from exc
+            raise ConfigError(_format_pyd_error(exc, f"experiments.yaml entry #{i + 1}")) from exc
     return out
 
 
@@ -83,7 +95,7 @@ def load_resources(project_dir: str | Path) -> Resources:
     try:
         return Resources(**data)
     except PydanticValidationError as exc:
-        raise ConfigError(f"resources.yaml is invalid: {exc}") from exc
+        raise ConfigError(_format_pyd_error(exc, "resources.yaml")) from exc
 
 
 def load_policy(project_dir: str | Path) -> Policy:
@@ -96,7 +108,7 @@ def load_policy(project_dir: str | Path) -> Policy:
     try:
         return Policy(**data)
     except PydanticValidationError as exc:
-        raise ConfigError(f"policy.yaml is invalid: {exc}") from exc
+        raise ConfigError(_format_pyd_error(exc, "policy.yaml")) from exc
 
 
 # --------------------------------------------------------------------------- #
@@ -113,9 +125,22 @@ def validate_configs(
     claim_ids = [c.id for c in claims]
     for cid in _duplicates(claim_ids):
         issues.append(f"Duplicate claim id '{cid}'.")
+    claim_id_set = set(claim_ids)
     for c in claims:
         if not c.id:
             issues.append("A claim is missing an 'id'.")
+        # Claim-graph edges must reference known claims and not self-loop.
+        for dep in c.depends_on:
+            if dep not in claim_id_set:
+                issues.append(f"Claim '{c.id}' depends_on unknown claim '{dep}'.")
+            if dep == c.id:
+                issues.append(f"Claim '{c.id}' depends on itself.")
+        for blocked in c.blocks:
+            if blocked not in claim_id_set:
+                issues.append(f"Claim '{c.id}' blocks unknown claim '{blocked}'.")
+
+    # Claim-graph cycles.
+    issues.extend(_claim_cycle_issues(claims))
 
     # Duplicate experiment IDs
     exp_ids = [e.id for e in experiments]
@@ -180,6 +205,31 @@ def _cycle_issues(experiments: list[Experiment]) -> list[str]:
             if color[nxt] == GREY:
                 cycle = " -> ".join(stack[stack.index(nxt):] + [nxt])
                 issues.append(f"Dependency cycle detected: {cycle}.")
+            elif color[nxt] == WHITE:
+                visit(nxt, stack + [nxt])
+        color[node] = BLACK
+
+    for n in graph:
+        if color[n] == WHITE:
+            visit(n, [n])
+    return issues
+
+
+def _claim_cycle_issues(claims: list[Claim]) -> list[str]:
+    """Detect cycles in the claim graph (depends_on edges)."""
+    graph = {c.id: [d for d in c.depends_on if d != c.id] for c in claims}
+    issues: list[str] = []
+    WHITE, GREY, BLACK = 0, 1, 2
+    color = dict.fromkeys(graph, WHITE)
+
+    def visit(node: str, stack: list[str]) -> None:
+        color[node] = GREY
+        for nxt in graph.get(node, []):
+            if nxt not in color:
+                continue
+            if color[nxt] == GREY:
+                cycle = " -> ".join(stack[stack.index(nxt):] + [nxt])
+                issues.append(f"Claim dependency cycle detected: {cycle}.")
             elif color[nxt] == WHITE:
                 visit(nxt, stack + [nxt])
         color[node] = BLACK

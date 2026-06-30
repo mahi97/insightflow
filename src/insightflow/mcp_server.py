@@ -133,6 +133,14 @@ def replay_tool(project_dir: str | None = None) -> dict[str, Any]:
     }
 
 
+def readiness_tool(project_dir: str | None = None) -> dict[str, Any]:
+    """Paper readiness over the claim graph: verdicts, blocked claims, the most
+    dangerous reviewer attacks, and recommended next research actions."""
+    from .readiness import assess_readiness
+
+    return assess_readiness(_ledger(project_dir).load_state()).model_dump()
+
+
 TOOLS = {
     "insightflow_state": state_tool,
     "insightflow_plan": plan_tool,
@@ -140,6 +148,7 @@ TOOLS = {
     "insightflow_validate": validate_tool,
     "insightflow_log_result": log_result_tool,
     "insightflow_replay": replay_tool,
+    "insightflow_readiness": readiness_tool,
 }
 
 

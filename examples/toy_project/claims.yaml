@@ -1,16 +1,31 @@
 claims:
+- id: C0
+  statement: method_a is a better method than baseline_a for this task family.
+  type: main
+  importance: critical
+  reviewer_risk: 0.8
+  depends_on:
+  - C1
+  - C2
+  evidence_requirements:
+  - C1 (accuracy generalizes) supported
+  - C2 (efficiency) supported
+  notes: Main paper claim. Decided by its supporting subclaims, not by runs of its
+    own.
 - id: C1
   statement: method_a improves accuracy over baseline_a, and this generalizes across
     datasets (external validity).
+  type: empirical
   importance: high
   target_metric: accuracy
   desired_direction: higher
   minimum_effect_size: 0.02
   required_seeds: 3
   reviewer_risk: 0.7
-  notes: Main paper claim. Generality across datasets is the key uncertainty.
+  notes: Generality across datasets is the key uncertainty.
 - id: C2
   statement: method_a is also more compute-efficient than baseline_a.
+  type: efficiency
   importance: medium
   target_metric: accuracy
   minimum_effect_size: 0.01

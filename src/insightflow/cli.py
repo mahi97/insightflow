@@ -30,6 +30,7 @@ from .reports import (
     render_benchmark_md,
     render_claim_confidence_md,
     render_plan_md,
+    render_readiness_md,
     render_scenarios_md,
     render_state_md,
     write_report,
@@ -225,6 +226,29 @@ def plan(
         _echo_json(the_plan.model_dump())
         return
     typer.echo(render_plan_md(the_plan))
+
+
+@app.command()
+def readiness(
+    project_dir: str | None = ProjectDirOpt,
+    format: str = FormatOpt,
+) -> None:
+    """Assess paper/project readiness over the claim graph: which claims are
+    supported/refuted/weak/blocked, the most dangerous reviewer attacks, and the
+    recommended next research actions."""
+    from .readiness import assess_readiness
+
+    try:
+        ledger = _ledger(project_dir)
+        report = assess_readiness(ledger.load_state())
+        write_report(ledger.project_dir, "readiness.md", render_readiness_md(report))
+    except InsightFlowError as exc:
+        _fail(str(exc))
+        return
+    if format == "json":
+        _echo_json(report.model_dump())
+        return
+    typer.echo(render_readiness_md(report))
 
 
 @app.command()

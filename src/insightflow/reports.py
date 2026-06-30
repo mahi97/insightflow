@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections import Counter
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from .schemas import (
     ClaimConfidence,
@@ -18,6 +19,9 @@ from .schemas import (
     State,
 )
 from .utils import ensure_dir, fmt, markdown_table, write_text
+
+if TYPE_CHECKING:
+    from .readiness import ReadinessReport
 
 
 def reports_dir(project_dir: str | Path) -> Path:
@@ -184,6 +188,44 @@ def render_plan_md(plan: Plan) -> str:
 # --------------------------------------------------------------------------- #
 # Benchmark
 # --------------------------------------------------------------------------- #
+def render_readiness_md(report: ReadinessReport) -> str:
+    """Render a paper-readiness assessment over the claim graph."""
+    lines = ["# Paper / project readiness", ""]
+    lines.append(f"**{report.summary}**")
+    lines.append("")
+    lines.append(f"Paper-ready (all key claims effectively supported): **{report.paper_ready}**")
+    lines.append("")
+    lines.append("## Claim verdicts")
+    lines.append("")
+    rows = [
+        [
+            r.claim_id, r.type, r.own_status.value, r.effective_status.value,
+            fmt(r.confidence, 2), fmt(r.reviewer_risk, 2), ", ".join(r.blockers) or "-",
+        ]
+        for r in report.claims
+    ]
+    lines.append(
+        markdown_table(
+            ["claim", "type", "own", "effective", "conf", "rev_risk", "blocked_by"], rows
+        )
+    )
+    lines.append("")
+    if report.blocked:
+        lines.append(f"## Blocked claims: {', '.join(report.blocked)}")
+        lines.append("")
+    if report.dangerous_attacks:
+        lines.append("## Most dangerous reviewer attacks (ranked)")
+        lines.append("")
+        lines.extend(f"{i + 1}. {a}" for i, a in enumerate(report.dangerous_attacks[:10]))
+        lines.append("")
+    if report.next_actions:
+        lines.append("## Recommended next research actions")
+        lines.append("")
+        lines.extend(f"- {a}" for a in report.next_actions[:12])
+        lines.append("")
+    return "\n".join(lines)
+
+
 def render_scenarios_md(result: dict) -> str:
     """Render the multi-scenario effectiveness benchmark."""
     lines = ["# Multi-scenario effectiveness benchmark", ""]

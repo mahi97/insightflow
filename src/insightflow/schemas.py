@@ -37,6 +37,19 @@ class ClaimStatus(str, Enum):
     weak = "weak"
     refuted = "refuted"
     needs_more_evidence = "needs_more_evidence"
+    blocked = "blocked"  # own evidence ok, but a depends_on subclaim is unmet
+
+
+class ClaimType(str, Enum):
+    main = "main"
+    empirical = "empirical"
+    mechanism = "mechanism"
+    efficiency = "efficiency"
+    robustness = "robustness"
+    theory = "theory"
+    limitation = "limitation"
+    negative = "negative"
+    auxiliary = "auxiliary"
 
 
 class ExperimentStatus(str, Enum):
@@ -79,21 +92,30 @@ class ActionType(str, Enum):
 # Core entities
 # --------------------------------------------------------------------------- #
 class Claim(BaseModel):
-    """A research claim we are trying to support, weaken, or refute.
+    """A node in the *claim graph*: a research claim we are trying to support,
+    weaken, or refute.
 
-    ``importance`` (a.k.a. priority) and ``reviewer_risk`` are in [0, 1].
+    ``importance`` (a.k.a. priority) and ``reviewer_risk`` are in [0, 1]. A claim
+    may ``depends_on`` supporting subclaims (e.g. a ``main`` claim depending on
+    ``empirical`` + ``robustness`` claims); it is only fully defensible once its
+    own evidence *and* its dependencies are met. Config-loaded, so unknown keys
+    are rejected (catches YAML typos).
     """
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
 
     id: str
     statement: str = ""
+    type: ClaimType = ClaimType.empirical
     importance: float = Field(0.5, ge=0.0, le=1.0)
     target_metric: str = "accuracy"
     desired_direction: DesiredDirection = DesiredDirection.higher
     minimum_effect_size: float = Field(0.0, ge=0.0)
     required_seeds: int = Field(3, ge=1)
     reviewer_risk: float = Field(0.5, ge=0.0, le=1.0)
+    depends_on: list[str] = Field(default_factory=list)  # subclaims this claim needs
+    blocks: list[str] = Field(default_factory=list)  # claims this one blocks (optional; derivable)
+    evidence_requirements: list[str] = Field(default_factory=list)  # free-text requirements
     status: ClaimStatus = ClaimStatus.unknown
     notes: str = ""
 
@@ -108,9 +130,11 @@ class Claim(BaseModel):
 
 
 class Experiment(BaseModel):
-    """One runnable unit of evidence: a (method, dataset, condition, seed) cell."""
+    """One runnable unit of evidence: a (method, dataset, condition, seed) cell.
 
-    model_config = ConfigDict(extra="ignore")
+    Config-loaded, so unknown keys are rejected (catches YAML typos)."""
+
+    model_config = ConfigDict(extra="forbid")
 
     id: str
     command: str | None = None
@@ -248,10 +272,10 @@ class Policy(BaseModel):
 
     Defaults are chosen so the tool behaves sensibly with an empty ``policy.yaml``.
     Every weight maps directly onto a term of the scheduling objective documented
-    in ``docs/scheduling_policy.md``.
+    in ``docs/scheduling_policy.md``. Config-loaded -> unknown keys rejected.
     """
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
 
     # Objective weights (numerator terms)
     weight_decision_value: float = 1.0
@@ -292,7 +316,7 @@ class Policy(BaseModel):
 
 
 class ResourcePool(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
 
     type: str = "gpu"
     count: int = Field(1, ge=0)
@@ -302,7 +326,7 @@ class ResourcePool(BaseModel):
 class Resources(BaseModel):
     """Available compute. Used for cost estimates and budget warnings."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid")
 
     pools: list[ResourcePool] = Field(default_factory=list)
     budget_gpu_hours: float | None = None

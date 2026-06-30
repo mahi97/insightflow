@@ -73,3 +73,33 @@ def test_validate_clean_config_has_no_issues():
     claims = [Claim(id="C1")]
     experiments = [Experiment(id="e1", claim_links=["C1"])]
     assert validate_configs(claims, experiments) == []
+
+
+def test_unknown_claim_field_is_rejected():
+    import pytest as _pytest
+    with _pytest.raises(PydValidationError):
+        Claim(id="C1", improtance="high")  # typo: improtance
+
+
+def test_unknown_experiment_field_is_rejected():
+    import pytest as _pytest
+    with _pytest.raises(PydValidationError):
+        Experiment(id="e1", datasett="cifar10")  # typo: datasett
+
+
+def test_validate_detects_claim_graph_problems():
+    claims = [
+        Claim(id="C0", type="main", depends_on=["C1", "C_missing"]),
+        Claim(id="C1", depends_on=["C0"]),  # cycle C0<->C1
+    ]
+    issues = validate_configs(claims, [])
+    joined = " ".join(issues)
+    assert "depends_on unknown claim 'C_missing'" in joined
+    assert "Claim dependency cycle" in joined
+
+
+def test_claim_graph_fields_load():
+    c = Claim(id="C0", type="main", depends_on=["C1"], evidence_requirements=["baseline on X"])
+    assert c.type.value == "main"
+    assert c.depends_on == ["C1"]
+    assert c.evidence_requirements == ["baseline on X"]

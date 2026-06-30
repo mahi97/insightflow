@@ -81,6 +81,7 @@ experiments:
   seed: 0
   claim_links:
   - C1
+  - C2
   expected_cost: 0.8
   expected_time: 0.8
   resource_type: gpu
@@ -94,6 +95,7 @@ experiments:
   seed: 1
   claim_links:
   - C1
+  - C2
   expected_cost: 0.8
   expected_time: 0.8
   resource_type: gpu
@@ -182,6 +184,7 @@ experiments:
   seed: 0
   claim_links:
   - C1
+  - C2
   expected_cost: 0.96
   expected_time: 0.8
   resource_type: gpu
@@ -195,6 +198,7 @@ experiments:
   seed: 1
   claim_links:
   - C1
+  - C2
   expected_cost: 0.96
   expected_time: 0.8
   resource_type: gpu
@@ -283,6 +287,7 @@ experiments:
   seed: 0
   claim_links:
   - C1
+  - C2
   expected_cost: 0.8800000000000001
   expected_time: 0.8
   resource_type: gpu
@@ -296,6 +301,7 @@ experiments:
   seed: 1
   claim_links:
   - C1
+  - C2
   expected_cost: 0.8800000000000001
   expected_time: 0.8
   resource_type: gpu
