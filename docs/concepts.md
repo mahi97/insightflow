@@ -5,9 +5,16 @@
 ### Claim
 
 A `Claim` is a falsifiable research assertion that InsightFlow is trying to
-support, weaken, or refute. Every claim has:
+support, weaken, or refute. Claims are the **unit of work**: InsightFlow is a
+*claim-centered* decision layer, so the scheduler, the readiness report, and the
+research actions all reason about claims, not just runs. Every claim has:
 
 - `id` and `statement`: a unique key and a human-readable description.
+- `type`: a `ClaimType` (`main`, `empirical`, `mechanism`, `efficiency`,
+  `robustness`, `theory`, `limitation`, `negative`, `auxiliary`). The type changes
+  how the claim is treated: e.g. a `theory` claim cannot be established by runs
+  alone (it warrants a `theorem_attempt`), and `main`/high-importance claims gate
+  paper readiness.
 - `importance` (alias: priority): a float in [0, 1], or a word like `high`
   (maps to 0.85) or `critical` (maps to 1.0). Controls how much scheduling
   weight a claim gets.
@@ -21,7 +28,38 @@ support, weaken, or refute. Every claim has:
 - `reviewer_risk`: a float in [0, 1] signalling how likely a reviewer is to
   attack this claim. High-risk claims receive extra pressure to have baselines
   present.
+- `depends_on`: a list of subclaim IDs this claim needs before it is fully
+  defensible (e.g. a `main` claim depending on an `empirical` and a `robustness`
+  subclaim). This is the edge set of the **claim graph** (see below). An unmet
+  `depends_on` is what makes a claim `blocked`.
+- `blocks`: an optional, often-derivable list of claims this one blocks. Provided
+  for convenience/readability; the readiness logic computes blocking from
+  `depends_on`.
+- `evidence_requirements`: free-text requirements (e.g. "effect holds on >= 3
+  datasets with matched baselines") that the readiness report surfaces but does
+  not parse.
 - `status`: a `ClaimStatus` reflecting the current evidence (see below).
+
+Config-loaded claims are `extra='forbid'`: an unknown/misspelled YAML key is a hard
+validation error, not a silent no-op.
+
+### The claim graph
+
+The set of claims plus their `depends_on` edges forms a directed **claim graph**.
+A `main` claim typically depends on supporting `empirical`, `mechanism`, or
+`robustness` subclaims; those may in turn depend on others. The graph matters
+because a claim is only fully defensible once **both** its own evidence **and** all
+of its dependencies are met — a `main` claim whose runs look good but whose
+supporting subclaim is unestablished is **`blocked`**, not `supported`. Two layers
+consume the graph:
+
+- the **readiness** report (`readiness.py`), which computes each claim's *effective*
+  status by combining own evidence with the status of its dependencies, and
+- the **research actions** generator (`actions.py`), which proposes establishing a
+  blocking subclaim before piling more evidence onto the claim that depends on it.
+
+(`ClaimStatus` values, including `blocked`, are defined under *Status values* in the
+Claim Confidence section below.)
 
 ### Experiment
 
@@ -162,7 +200,7 @@ scores far above an extra seed automatically.
 
 This model is **calibrated**: an independent reliability experiment
 (N = 200,000 draws from the model) measured an Expected Calibration Error of
-**0.0119** (well under 0.05) — when it says 80%, it is right about 80% of the
+**0.011** (well under 0.05) — when it says 80%, it is right about 80% of the
 time. It is the honest upgrade from the heuristic; the heuristic remains the
 default because it is faster to reach a decision and trivially explainable, while
 `bayes` gives calibrated probabilities and a principled stopping rule. The
@@ -233,9 +271,18 @@ single well-replicated dataset from "proving" a cross-dataset generality claim.
 | `weak` | Support score near the decision boundary (`boundary ± margin`) |
 | `supported` | Support score clearly above boundary and breadth >= 60% |
 | `refuted` | Support score clearly below boundary and breadth >= 60% |
+| `blocked` | The claim's *own* evidence is fine, but a `depends_on` subclaim is unmet |
+
+The first five statuses come from the per-claim evidence above (`compute_claim_evidence`).
+`blocked` is an **effective** status: it is assigned by the readiness layer when a
+claim's own status would be `supported` but one of its `depends_on` subclaims is not
+yet established (see *Paper Readiness* below). A claim's *own* status is never
+`blocked`; only its effective status can be.
 
 The `confidence` scalar on `ClaimConfidence` is `support` if measurable, else
-`0.3 * evidence_breadth`. It is a ranking signal, not a calibrated probability.
+`0.3 * evidence_breadth`. In the default `heuristic` mode it is a **ranking signal,
+not a calibrated probability**; only the opt-in `bayes` mode (above) produces a
+calibrated probability.
 
 ---
 
@@ -301,6 +348,112 @@ returns.
 
 ---
 
+## Paper Readiness
+
+`readiness.py` is the layer that makes InsightFlow *claim-centered* rather than
+experiment-centered. Given the per-claim evidence (from `scoring.py`) and the claim
+graph (`depends_on`), it answers the question a researcher actually has before
+submission: **is this paper ready, and if not, what is in the way?** It is a
+deterministic, auditable function of the ledger — it never invents a verdict;
+statuses come from the same evidence the scheduler uses. The CLI surface is
+`insightflow readiness` (also an MCP tool).
+
+### Own status vs. effective status
+
+Each claim carries two statuses in the readiness report:
+
+- **own status** — the `ClaimStatus` computed from *this claim's own evidence*
+  (exactly the breadth-gated logistic status described under Claim Confidence).
+- **effective status** — the own status combined with the claim graph. This is
+  where `blocked` appears. `_effective_status` works as follows:
+  - No `depends_on` -> effective status equals own status.
+  - Own status is `supported` but a subclaim is unmet -> **`blocked`**.
+  - A *meta-claim* with no runs of its own (own status `unknown`) is derived from
+    its subgraph: `supported` if all subclaims are supported, `weak` if a subclaim
+    is refuted, otherwise `blocked`.
+  - Otherwise the claim keeps its own status (a `refuted` claim stays `refuted`).
+
+A subclaim counts as a *blocker* whenever its own status is anything other than
+`supported`.
+
+### What the report contains
+
+For every claim, `ClaimReadiness` records its type, importance, own and effective
+status, confidence, the unmet `blockers`, `missing_baselines`, a `thin_generality`
+flag (observed but breadth < 100% on an important claim), an `insufficient_seeds`
+flag, its `reviewer_risk`, the ranked `reviewer_attacks`, and the recommended
+`recommended_actions`.
+
+At the project level, `ReadinessReport` buckets claims by effective status
+(`supported` / `refuted` / `weak` / `needs_more_evidence` / `blocked`), lists the
+**most dangerous reviewer attacks** (every claim's attacks sorted by
+`reviewer_risk x importance`), the **next actions** (recommended actions ordered by
+`importance + reviewer_risk`), and a single `paper_ready` boolean.
+
+### Reviewer attacks and the paper-ready gate
+
+The reviewer attacks are the auditable list of how a reviewer could break the paper
+*right now*: generality argued from too few conditions, an effect with no baseline
+to attribute it to, a "supported" claim resting on fewer than the required seeds, an
+unestablished premise (a `depends_on` subclaim that is not yet supported), or a
+direct contradiction (the evidence refutes the claim as stated).
+
+`paper_ready` is intentionally strict: it is `True` only when **every** main or
+high-importance (`importance >= 0.7`) claim is *effectively* supported. One blocked
+main claim, one refuted key claim, or one key claim still gathering evidence is
+enough to make the project not paper-ready. This is the signal an agent must read
+(`insightflow readiness`) instead of eyeballing whether the paper is done.
+
+---
+
+## Research Actions
+
+A claim-centered planner must recommend more than training runs. `actions.py`
+provides **research actions** — units of work that advance a claim but are often not
+GPU runs:
+
+- `literature_search` — a novelty/positioning check before committing compute,
+- `reviewer_attack` — adversarially stress a claim that *looks* decided but is thin,
+- `theorem_attempt` / `counterexample_search` / `proof_verification` — for `theory`
+  claims that runs alone cannot establish,
+- `claim_refinement` — weaken, split, or scope a refuted/weak claim,
+- `baseline_design`, `dataset_addition`, `run_ablation`, `run_stress_test`,
+  `run_negative_control`, `write_related_work`, `write_limitations`,
+  `paper_readiness_review`, and more (see `ActionType` in `schemas.py`).
+
+A `ResearchAction` carries an `instruction` (what a human or agent should *do*)
+rather than always a `command`, plus `expected_cost` (often ~0 for non-run actions)
+and `expected_time` (a human/agent-time proxy).
+
+### Where they come from
+
+1. **Auto-generated** by `generate_research_actions` from the current claim
+   evidence — deterministically, a handful per claim. For example: a
+   `literature_search` for an important, high-reviewer-risk claim with no evidence
+   yet; a `reviewer_attack` for a decided-looking but thin claim; a
+   `claim_refinement` for a refuted or weak claim; a `theorem_attempt` for an
+   unestablished `theory` claim.
+2. **User-defined** in `actions.yaml` (config-loaded, `extra='forbid'`).
+
+### How they are scored
+
+`score_research_action` scores a research action into the same `PlanAction` shape as
+an experiment, on the **same value-per-unit-cost basis**:
+
+```
+need  = max(claim_needs) + 0.3 * (sum(claim_needs) - max(claim_needs))
+score = need / (expected_time + lambda_cost * expected_cost)
+```
+
+where `_claim_need` measures how strongly a given action type is warranted by a
+claim's evidence (e.g. a `reviewer_attack` is needed in proportion to
+`reviewer_risk` when the claim looks decided but thin; a `theorem_attempt` is needed
+for an unestablished theory claim). Because actions and experiments share the
+denominator, the scheduler can rank "adversarially attack C1" *above* another GPU run
+when that is genuinely the higher-value next step — that is the point of having them.
+
+---
+
 ## Theoretical Lineage
 
 InsightFlow v0.1 is best understood against its related work.
@@ -341,7 +494,7 @@ InsightFlow ships **two** scorers against this framing:
   testability.
 - The opt-in `bayes` scorer (`confidence_model: bayes`) **does** maintain a
   calibrated posterior (the finite-population Normal–Normal model above, ECE
-  0.0119) and scores actions by the literal expected reduction in decision
+  0.011) and scores actions by the literal expected reduction in decision
   uncertainty — a concrete, deterministic value-of-information rule. This is the
   Knowledge-Gradient-style scorer the earlier roadmap promised, now implemented.
 

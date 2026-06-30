@@ -42,7 +42,7 @@ verdicts* under cost, uncertainty, and reviewer risk.
   `policy.confidence_model: bayes`). A deterministic, finite-population
   Normal–Normal posterior on the population effect; actions scored by expected
   reduction in decision uncertainty. Adversarially verified (math, code) and
-  calibrated (Expected Calibration Error 0.0119 over 200k draws). The heuristic
+  calibrated (Expected Calibration Error 0.011 over 200k draws). The heuristic
   model remains the default.
 - **Freeze-thaw learning-curve extrapolation** (`curves.py`): the partial-run
   policy now decides continue/stop/promote on the *projected* final value of a

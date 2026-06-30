@@ -135,3 +135,10 @@ def test_expected_voi_quadrature_is_positive_diminishing_and_deterministic():
     # Deterministic (fixed Gauss-Hermite grid).
     assert expected_voi_new_cell([0.05], [SE2], K, SE2, claim, POLICY) == \
         expected_voi_new_cell([0.05], [SE2], K, SE2, claim, POLICY)
+
+
+def test_calibration_ece_is_low_and_deterministic():
+    from insightflow.calibration import measure_calibration
+    r = measure_calibration(n=3000, seed=1)
+    assert r.ece < 0.06  # well-calibrated against its own assumptions (small-N bound)
+    assert measure_calibration(n=3000, seed=1).ece == r.ece  # deterministic

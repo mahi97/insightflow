@@ -109,7 +109,7 @@ for machine-readable output.
 finite-population Normal–Normal model (`bayes.py`) of the population effect, with
 actions scored by the literal expected reduction in decision uncertainty (value
 of information). It is deterministic, adversarially verified, and calibrated
-(Expected Calibration Error 0.0119 over 200k draws). The heuristic remains the
+(Expected Calibration Error 0.011 over 200k draws). The heuristic remains the
 default; see `docs/concepts.md`. Remaining: a fully hierarchical treatment of
 within-cell variance (currently a plug-in standard error).
 
