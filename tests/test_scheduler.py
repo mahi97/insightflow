@@ -39,8 +39,12 @@ def test_extra_cifar10_seeds_are_not_in_top_queue(cifar10_observed_state):
 
 def test_queue_diversifies_across_conditions(cifar10_observed_state):
     plan = build_plan(cifar10_observed_state)
-    # No (cell, role) should appear twice among the method launches in the queue.
-    method_cells = [_cell(a) for a in plan.actions if "baseline" not in a.label]
+    # No (cell, role) should appear twice among the *method launches* in the queue.
+    method_launches = [
+        a for a in plan.actions
+        if a.action_type in (ActionType.launch, ActionType.add_seed) and "baseline" not in a.label
+    ]
+    method_cells = [_cell(a) for a in method_launches]
     assert len(method_cells) == len(set(method_cells)), "queue stacked seeds of one condition"
 
 

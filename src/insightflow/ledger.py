@@ -216,6 +216,7 @@ class Ledger:
         config_exps = configmod.load_experiments(self.project_dir)
         policy = configmod.load_policy(self.project_dir)
         resources = configmod.load_resources(self.project_dir)
+        research_actions = configmod.load_actions(self.project_dir)
         results = self.get_results()
 
         # Merge config experiments with stored (imported/added) ones; config wins on id.
@@ -243,6 +244,7 @@ class Ledger:
             claims=claims,
             experiments=experiments,
             results=results,
+            research_actions=research_actions,
             policy=policy,
             resources=resources,
         )

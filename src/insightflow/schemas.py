@@ -76,6 +76,7 @@ class RunSource(str, Enum):
 
 
 class ActionType(str, Enum):
+    # Executable / run-level actions
     launch = "launch"
     add_seed = "add_seed"
     add_experiment = "add_experiment"
@@ -84,8 +85,25 @@ class ActionType(str, Enum):
     stop = "stop"
     promote = "promote"
     launch_baseline = "launch_baseline"
+    run_ablation = "run_ablation"
+    run_stress_test = "run_stress_test"
+    run_negative_control = "run_negative_control"
+    dataset_addition = "dataset_addition"
+    # Non-run research actions (often produce an instruction, not a command)
+    literature_search = "literature_search"
+    theorem_attempt = "theorem_attempt"
+    counterexample_search = "counterexample_search"
+    proof_verification = "proof_verification"
+    baseline_design = "baseline_design"
+    claim_refinement = "claim_refinement"
+    reviewer_attack = "reviewer_attack"
+    write_related_work = "write_related_work"
+    write_limitations = "write_limitations"
+    paper_readiness_review = "paper_readiness_review"
+    # Control actions
     postpone = "postpone"
     avoid = "avoid"
+    stop_branch = "stop_branch"
 
 
 # --------------------------------------------------------------------------- #
@@ -228,6 +246,31 @@ class PlanAction(BaseModel):
     # Transparent breakdown of every scoring term; used by `explain`.
     factors: dict[str, float] = Field(default_factory=dict)
     label: str = ""  # human-friendly description, e.g. "method_a / cifar100 / seed=0"
+    # For non-run research actions: the human/agent instruction to carry out.
+    instruction: str = ""
+
+
+class ResearchAction(BaseModel):
+    """A research action that is not (necessarily) a training run.
+
+    Examples: a literature/novelty check, a reviewer-style attack on a claim, a
+    theorem attempt, a dataset addition, or a claim refinement. Non-executable
+    actions leave ``command`` empty and carry an ``instruction`` for a human or
+    agent. Config-loaded from ``actions.yaml`` (unknown keys rejected)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    type: ActionType
+    description: str = ""
+    instruction: str = ""  # what to actually do (for non-run actions)
+    command: str | None = None
+    claim_links: list[str] = Field(default_factory=list)
+    expected_cost: float = Field(0.0, ge=0.0)  # GPU/$ cost (~0 for non-run actions)
+    expected_time: float = Field(1.0, gt=0.0)  # human/agent time proxy
+    status: ExperimentStatus = ExperimentStatus.pending
+    tags: list[str] = Field(default_factory=list)
+    notes: str = ""
 
 
 class ClaimConfidence(BaseModel):
@@ -344,6 +387,7 @@ class State(BaseModel):
     claims: list[Claim] = Field(default_factory=list)
     experiments: list[Experiment] = Field(default_factory=list)
     results: list[RunResult] = Field(default_factory=list)
+    research_actions: list[ResearchAction] = Field(default_factory=list)
     policy: Policy = Field(default_factory=Policy)
     resources: Resources = Field(default_factory=Resources)
 

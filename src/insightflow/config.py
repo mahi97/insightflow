@@ -19,7 +19,7 @@ from pathlib import Path
 from pydantic import ValidationError as PydanticValidationError
 
 from .errors import ConfigError, ValidationError
-from .schemas import Claim, Experiment, Policy, Resources
+from .schemas import Claim, Experiment, Policy, ResearchAction, Resources
 from .utils import read_yaml, write_yaml
 
 CONFIG_FILES = {
@@ -27,6 +27,7 @@ CONFIG_FILES = {
     "experiments": "experiments.yaml",
     "resources": "resources.yaml",
     "policy": "policy.yaml",
+    "actions": "actions.yaml",
 }
 
 
@@ -82,6 +83,18 @@ def load_experiments(project_dir: str | Path) -> list[Experiment]:
             out.append(Experiment(**item))
         except PydanticValidationError as exc:
             raise ConfigError(_format_pyd_error(exc, f"experiments.yaml entry #{i + 1}")) from exc
+    return out
+
+
+def load_actions(project_dir: str | Path) -> list[ResearchAction]:
+    """Load user-defined research actions from ``actions.yaml`` (optional)."""
+    raw = _load_list(config_dir(project_dir) / CONFIG_FILES["actions"], "actions")
+    out = []
+    for i, item in enumerate(raw):
+        try:
+            out.append(ResearchAction(**item))
+        except PydanticValidationError as exc:
+            raise ConfigError(_format_pyd_error(exc, f"actions.yaml entry #{i + 1}")) from exc
     return out
 
 
@@ -286,6 +299,22 @@ def write_default_configs(project_dir: str | Path, overwrite: bool = False) -> l
             "budget_gpu_hours": 200,
         },
         "policy": Policy().model_dump(),
+        # Optional: user-defined research actions. The scheduler also auto-generates
+        # these (literature search, reviewer attack, claim refinement, ...) from the
+        # evidence, so an empty list is fine.
+        "actions": {
+            "actions": [
+                {
+                    "id": "lit_search_C1",
+                    "type": "literature_search",
+                    "description": "Novelty check for C1",
+                    "instruction": "Search related work for C1: is the contribution novel vs X, Y, Z?",
+                    "claim_links": ["C1"],
+                    "expected_cost": 0.0,
+                    "expected_time": 1.0,
+                }
+            ]
+        },
     }
     for key, fname in CONFIG_FILES.items():
         path = cdir / fname

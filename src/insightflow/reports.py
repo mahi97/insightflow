@@ -150,7 +150,11 @@ def render_plan_md(plan: Plan) -> str:
         lines.append("### Rationale")
         lines.append("")
         for i, a in enumerate(plan.actions):
-            lines.append(f"{i + 1}. **{a.label or a.experiment_id}** ({a.action_type.value}) - {a.rationale}")
+            lines.append(
+                f"{i + 1}. **{a.label or a.experiment_id}** ({a.action_type.value}) - {a.rationale}"
+            )
+            if a.instruction:
+                lines.append(f"   - _Instruction:_ {a.instruction}")
         lines.append("")
 
     if plan.postponed:

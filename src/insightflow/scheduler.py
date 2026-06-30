@@ -13,6 +13,7 @@ then make breadth outrank premature replication.
 
 from __future__ import annotations
 
+from .actions import generate_research_actions, score_research_action
 from .errors import SchedulerError
 from .partial import monitor_all
 from .schemas import (
@@ -99,6 +100,18 @@ class Scheduler:
         # In-flight runs (partial monitoring).
         for action in monitor_all(state, evidence, self.policy):
             scored.append((action, "running"))
+
+        # Research actions (user-defined in actions.yaml + auto-generated from the
+        # evidence): literature search, reviewer attack, claim refinement, theorem
+        # attempt, etc. — scored against experiments so the planner can say "do a
+        # literature search before spending compute".
+        research = list(state.research_actions) + generate_research_actions(state, evidence)
+        seen_action_ids: set[str] = set()
+        for ra in research:
+            if ra.id in seen_action_ids:
+                continue
+            seen_action_ids.add(ra.id)
+            scored.append((score_research_action(ra, state, evidence), "open"))
 
         scored.sort(key=lambda pair: pair[0].score, reverse=True)
 
