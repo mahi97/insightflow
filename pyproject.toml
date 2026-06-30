@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "insightflow"
-version = "0.2.0"
-description = "Adaptive experiment scheduler for ML research that optimizes time-to-insight, not grid completion."
+version = "0.3.0"
+description = "A claim-centered research decision layer for AI-assisted ML research: decide which evidence to acquire next to reach defensible claim verdicts under cost, uncertainty, and reviewer risk."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }

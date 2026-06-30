@@ -97,3 +97,16 @@ def test_init_then_validate(tmp_path):
     p = str(tmp_path)
     assert _run("init", "-C", p).exit_code == 0
     assert _run("validate", "-C", p).exit_code == 0
+
+
+def test_readiness_command(tmp_path):
+    p = str(tmp_path)
+    _run("demo", "--force", "-C", p)
+    result = _run("readiness", "-C", p)
+    assert result.exit_code == 0
+    assert "readiness" in result.stdout.lower()
+    # JSON form is machine-readable.
+    j = _run("readiness", "-C", p, "--format", "json")
+    assert j.exit_code == 0
+    data = json.loads(j.stdout)
+    assert "claims" in data and "paper_ready" in data

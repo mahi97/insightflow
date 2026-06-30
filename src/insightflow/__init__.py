@@ -14,6 +14,7 @@ Public API (stable for v0.1):
 
 from __future__ import annotations
 
+from .actions import generate_research_actions, score_research_action
 from .errors import (
     ConfigError,
     InsightFlowError,
@@ -23,21 +24,25 @@ from .errors import (
     WandbImportError,
 )
 from .ledger import Ledger
+from .readiness import ReadinessReport, assess_readiness
 from .scheduler import Scheduler, build_plan, compute_state_hash
 from .schemas import (
     Claim,
     ClaimConfidence,
+    ClaimStatus,
+    ClaimType,
     Experiment,
     Plan,
     PlanAction,
     Policy,
+    ResearchAction,
     Resources,
     RunResult,
     State,
 )
 from .scoring import compute_claim_confidence, compute_claim_evidence
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "__version__",
@@ -48,13 +53,21 @@ __all__ = [
     "compute_state_hash",
     "compute_claim_confidence",
     "compute_claim_evidence",
+    # claim-centered layer
+    "assess_readiness",
+    "ReadinessReport",
+    "generate_research_actions",
+    "score_research_action",
     # schemas
     "Claim",
     "ClaimConfidence",
+    "ClaimStatus",
+    "ClaimType",
     "Experiment",
     "Plan",
     "PlanAction",
     "Policy",
+    "ResearchAction",
     "Resources",
     "RunResult",
     "State",

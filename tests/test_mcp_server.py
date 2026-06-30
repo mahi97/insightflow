@@ -62,3 +62,10 @@ def test_replay_tool(demo_dir):
 def test_tool_on_uninitialized_dir_raises(tmp_path):
     with pytest.raises(InsightFlowError):
         state_tool(str(tmp_path))
+
+
+def test_readiness_tool(demo_dir):
+    from insightflow.mcp_server import readiness_tool
+    out = readiness_tool(demo_dir)
+    assert "claims" in out and "paper_ready" in out
+    assert "insightflow_readiness" in TOOLS
