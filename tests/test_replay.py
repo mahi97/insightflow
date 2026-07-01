@@ -78,3 +78,27 @@ def test_replay_multi_policy_comparison():
     decided = [v for v in comp.values() if v is not None]
     assert comp["insightflow"] is not None
     assert comp["insightflow"] <= max(decided)
+
+
+def test_replay_from_csv_example():
+    """The committed replay-from-CSV example: import completed runs and confirm
+    InsightFlow's replay order reaches the verdict in no more runs than the actual."""
+    import shutil
+    from pathlib import Path
+
+    from insightflow.importers import import_csv
+    from insightflow.ledger import Ledger
+
+    src = Path(__file__).resolve().parent.parent / "examples" / "replay_example"
+    import tempfile
+    tmp = Path(tempfile.mkdtemp())
+    shutil.copytree(src / "configs", tmp / "configs")
+    ledger = Ledger(tmp)
+    ledger.initialize(force=True)
+    exps, results = import_csv(src / "runs.csv", "accuracy")
+    ledger.merge_imported_runs(exps, results)
+
+    result = replay(ledger.load_state())
+    assert result.ground_truth == {"C1": "supported"}
+    assert result.policy_comparison["insightflow"] is not None
+    assert result.policy_comparison["insightflow"] <= result.policy_comparison["actual"]

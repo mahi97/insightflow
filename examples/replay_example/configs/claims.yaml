@@ -1,0 +1,10 @@
+claims:
+- id: C1
+  type: empirical
+  statement: method_a improves accuracy over baseline_a and this generalizes across
+    datasets.
+  importance: high
+  target_metric: accuracy
+  minimum_effect_size: 0.02
+  required_seeds: 2
+  reviewer_risk: 0.7

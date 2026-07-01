@@ -1,0 +1,16 @@
+id,method,dataset,seed,accuracy,cost
+baseline_a_cifar10_s0,baseline_a,cifar10,0,0.7191,0.8
+baseline_a_cifar10_s1,baseline_a,cifar10,1,0.7172,0.8
+method_a_cifar10_s0,method_a,cifar10,0,0.779,1.0
+method_a_cifar10_s1,method_a,cifar10,1,0.782,1.0
+method_a_cifar10_s2,method_a,cifar10,2,0.7791,1.0
+baseline_a_cifar100_s0,baseline_a,cifar100,0,0.5531,0.8
+baseline_a_cifar100_s1,baseline_a,cifar100,1,0.5507,0.8
+method_a_cifar100_s0,method_a,cifar100,0,0.6091,1.0
+method_a_cifar100_s1,method_a,cifar100,1,0.6144,1.0
+method_a_cifar100_s2,method_a,cifar100,2,0.6117,1.0
+baseline_a_svhn_s0,baseline_a,svhn,0,0.8826,0.8
+baseline_a_svhn_s1,baseline_a,svhn,1,0.8815,0.8
+method_a_svhn_s0,method_a,svhn,0,0.9416,1.0
+method_a_svhn_s1,method_a,svhn,1,0.9407,1.0
+method_a_svhn_s2,method_a,svhn,2,0.9333,1.0

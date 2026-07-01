@@ -1,0 +1,175 @@
+experiments:
+- id: method_a_cifar10_s0
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar10
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_a_cifar10_s1
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar10
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_a_cifar10_s2
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar10
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: baseline_a_cifar10_s0
+  method: baseline_a
+  dataset: cifar10
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 0.8
+  expected_time: 0.8
+  tags:
+  - baseline
+- id: baseline_a_cifar10_s1
+  method: baseline_a
+  dataset: cifar10
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 0.8
+  expected_time: 0.8
+  tags:
+  - baseline
+- id: method_a_cifar100_s0
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar100
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_a_cifar100_s1
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar100
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_a_cifar100_s2
+  method: method_a
+  baseline: baseline_a
+  dataset: cifar100
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: baseline_a_cifar100_s0
+  method: baseline_a
+  dataset: cifar100
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 0.8
+  expected_time: 0.8
+  tags:
+  - baseline
+- id: baseline_a_cifar100_s1
+  method: baseline_a
+  dataset: cifar100
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 0.8
+  expected_time: 0.8
+  tags:
+  - baseline
+- id: method_a_svhn_s0
+  method: method_a
+  baseline: baseline_a
+  dataset: svhn
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_a_svhn_s1
+  method: method_a
+  baseline: baseline_a
+  dataset: svhn
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_a_svhn_s2
+  method: method_a
+  baseline: baseline_a
+  dataset: svhn
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: baseline_a_svhn_s0
+  method: baseline_a
+  dataset: svhn
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 0.8
+  expected_time: 0.8
+  tags:
+  - baseline
+- id: baseline_a_svhn_s1
+  method: baseline_a
+  dataset: svhn
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 0.8
+  expected_time: 0.8
+  tags:
+  - baseline
