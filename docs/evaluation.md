@@ -12,6 +12,11 @@ accuracy; we measure how *efficiently and reliably* a policy reaches the *correc
 research decision* about a set of falsifiable claims, where "correct" is defined
 by a ground truth the policy cannot see.
 
+> This page covers the **synthetic** benchmark (controlled ground truth). For
+> validation on **real Weights & Biases logs** — a decisive replay saving ~50% of
+> runs and an anti-overclaim case on real GLUE data — see
+> [real_data_evaluation.md](real_data_evaluation.md).
+
 A note on novelty, stated up front because honesty is the project's core
 principle: the contribution evaluated here is the **integration and the
 objective** — claim-level state, evidence requirements, reviewer-risk-aware

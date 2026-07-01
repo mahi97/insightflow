@@ -483,6 +483,13 @@ InsightFlow would have reached the full-history decision in fewer runs.
 uv run insightflow replay [-C DIR] [--format json]
 ```
 
+Validated on **real W&B logs**: on 144 runs from a real BBOB study InsightFlow
+reaches the "Muon_ES beats Open_ES" verdict in **58 runs vs the actual 115 (−49.6%)**;
+on 447 real GLUE runs it correctly returns a borderline GFA-vs-LoRA claim as *weak*
+rather than overclaiming. See [docs/real_data_evaluation.md](docs/real_data_evaluation.md)
+and [`examples/muon_bbob_real`](examples/muon_bbob_real) /
+[`examples/gfa_vs_lora_real`](examples/gfa_vs_lora_real).
+
 #### `benchmark --all-scenarios`
 
 Run all seven task scenarios (`breadth`, `expensive_branch`, `dependency_unlock`,

@@ -11,6 +11,20 @@ scheduler): decide which evidence to acquire next to reach defensible *claim
 verdicts* under cost, uncertainty, and reviewer risk.
 
 ### Added
+- **Real-data evaluation on Weights & Biases logs.** A `wandb_to_replay` adapter
+  (`extract` + `build`) turns a finished W&B project into a replay case. Two
+  committed, reproducible case studies with real numbers + regression tests: a
+  decisive replay (Muon_ES vs Open_ES on BBOB, **58 vs 115 runs = −49.6%**,
+  supported) and an anti-overclaim case (GFA vs LoRA on GLUE, correctly returned
+  *weak* where a naive pooled rule would overclaim). See
+  [docs/real_data_evaluation.md](docs/real_data_evaluation.md).
+- **Powered agent-vs-ledger pilot.** A deterministic `agent_env` world plus an
+  aggregator run six real Opus agents (guided vs naive); documented honestly as a
+  modest, mixed result (`eval/AGENT_STUDY.md`).
+- **Opt-in two-step value-of-information lookahead** (`policy.lookahead_depth=2`):
+  values an observation partly by whether it makes the next one decisive; softens
+  the myopic one-step limitation (still not a full multi-step optimal planner).
+- **`no_seed_policy` ablation**, completing the ablation matrix.
 - **Claim graph.** Claims gain `type`
   (main/empirical/mechanism/efficiency/robustness/theory/limitation/negative/auxiliary),
   `depends_on`, `blocks`, and `evidence_requirements`; a new `blocked` status. Config
