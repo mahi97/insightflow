@@ -1,0 +1,1585 @@
+experiments:
+- id: method_attractive_sector_s0
+  method: Muon_ES
+  dataset: attractive_sector
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_attractive_sector_s1
+  method: Muon_ES
+  dataset: attractive_sector
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_attractive_sector_s2
+  method: Muon_ES
+  dataset: attractive_sector
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_bent_cigar_s0
+  method: Muon_ES
+  dataset: bent_cigar
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_bent_cigar_s1
+  method: Muon_ES
+  dataset: bent_cigar
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_bent_cigar_s2
+  method: Muon_ES
+  dataset: bent_cigar
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_bueche_rastrigin_s0
+  method: Muon_ES
+  dataset: bueche_rastrigin
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_bueche_rastrigin_s1
+  method: Muon_ES
+  dataset: bueche_rastrigin
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_bueche_rastrigin_s2
+  method: Muon_ES
+  dataset: bueche_rastrigin
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_different_powers_s0
+  method: Muon_ES
+  dataset: different_powers
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_different_powers_s1
+  method: Muon_ES
+  dataset: different_powers
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_different_powers_s2
+  method: Muon_ES
+  dataset: different_powers
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_discus_s0
+  method: Muon_ES
+  dataset: discus
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_discus_s1
+  method: Muon_ES
+  dataset: discus
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_discus_s2
+  method: Muon_ES
+  dataset: discus
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_ellipsoidal_s0
+  method: Muon_ES
+  dataset: ellipsoidal
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_ellipsoidal_s1
+  method: Muon_ES
+  dataset: ellipsoidal
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_ellipsoidal_s2
+  method: Muon_ES
+  dataset: ellipsoidal
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_ellipsoidal_rotated_s0
+  method: Muon_ES
+  dataset: ellipsoidal_rotated
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_ellipsoidal_rotated_s1
+  method: Muon_ES
+  dataset: ellipsoidal_rotated
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_ellipsoidal_rotated_s2
+  method: Muon_ES
+  dataset: ellipsoidal_rotated
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_gallagher_101_me_s0
+  method: Muon_ES
+  dataset: gallagher_101_me
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_gallagher_101_me_s1
+  method: Muon_ES
+  dataset: gallagher_101_me
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_gallagher_101_me_s2
+  method: Muon_ES
+  dataset: gallagher_101_me
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_gallagher_21_hi_s0
+  method: Muon_ES
+  dataset: gallagher_21_hi
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_gallagher_21_hi_s1
+  method: Muon_ES
+  dataset: gallagher_21_hi
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_gallagher_21_hi_s2
+  method: Muon_ES
+  dataset: gallagher_21_hi
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_griewank_rosenbrock_s0
+  method: Muon_ES
+  dataset: griewank_rosenbrock
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_griewank_rosenbrock_s1
+  method: Muon_ES
+  dataset: griewank_rosenbrock
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_griewank_rosenbrock_s2
+  method: Muon_ES
+  dataset: griewank_rosenbrock
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_katsuura_s0
+  method: Muon_ES
+  dataset: katsuura
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_katsuura_s1
+  method: Muon_ES
+  dataset: katsuura
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_katsuura_s2
+  method: Muon_ES
+  dataset: katsuura
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_linear_slope_s0
+  method: Muon_ES
+  dataset: linear_slope
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_linear_slope_s1
+  method: Muon_ES
+  dataset: linear_slope
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_linear_slope_s2
+  method: Muon_ES
+  dataset: linear_slope
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_lunacek_s0
+  method: Muon_ES
+  dataset: lunacek
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_lunacek_s1
+  method: Muon_ES
+  dataset: lunacek
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_lunacek_s2
+  method: Muon_ES
+  dataset: lunacek
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_rastrigin_s0
+  method: Muon_ES
+  dataset: rastrigin
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_rastrigin_s1
+  method: Muon_ES
+  dataset: rastrigin
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_rastrigin_s2
+  method: Muon_ES
+  dataset: rastrigin
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_rastrigin_rotated_s0
+  method: Muon_ES
+  dataset: rastrigin_rotated
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_rastrigin_rotated_s1
+  method: Muon_ES
+  dataset: rastrigin_rotated
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_rastrigin_rotated_s2
+  method: Muon_ES
+  dataset: rastrigin_rotated
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_rosenbrock_s0
+  method: Muon_ES
+  dataset: rosenbrock
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_rosenbrock_s1
+  method: Muon_ES
+  dataset: rosenbrock
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_rosenbrock_s2
+  method: Muon_ES
+  dataset: rosenbrock
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_rosenbrock_rotated_s0
+  method: Muon_ES
+  dataset: rosenbrock_rotated
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_rosenbrock_rotated_s1
+  method: Muon_ES
+  dataset: rosenbrock_rotated
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_rosenbrock_rotated_s2
+  method: Muon_ES
+  dataset: rosenbrock_rotated
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_schaffers_f7_s0
+  method: Muon_ES
+  dataset: schaffers_f7
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_schaffers_f7_s1
+  method: Muon_ES
+  dataset: schaffers_f7
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_schaffers_f7_s2
+  method: Muon_ES
+  dataset: schaffers_f7
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_schaffers_f7_ill_cond_s0
+  method: Muon_ES
+  dataset: schaffers_f7_ill_cond
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_schaffers_f7_ill_cond_s1
+  method: Muon_ES
+  dataset: schaffers_f7_ill_cond
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_schaffers_f7_ill_cond_s2
+  method: Muon_ES
+  dataset: schaffers_f7_ill_cond
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_schwefel_s0
+  method: Muon_ES
+  dataset: schwefel
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_schwefel_s1
+  method: Muon_ES
+  dataset: schwefel
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_schwefel_s2
+  method: Muon_ES
+  dataset: schwefel
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_sharp_ridge_s0
+  method: Muon_ES
+  dataset: sharp_ridge
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_sharp_ridge_s1
+  method: Muon_ES
+  dataset: sharp_ridge
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_sharp_ridge_s2
+  method: Muon_ES
+  dataset: sharp_ridge
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_sphere_s0
+  method: Muon_ES
+  dataset: sphere
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_sphere_s1
+  method: Muon_ES
+  dataset: sphere
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_sphere_s2
+  method: Muon_ES
+  dataset: sphere
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_step_ellipsoidal_s0
+  method: Muon_ES
+  dataset: step_ellipsoidal
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_step_ellipsoidal_s1
+  method: Muon_ES
+  dataset: step_ellipsoidal
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_step_ellipsoidal_s2
+  method: Muon_ES
+  dataset: step_ellipsoidal
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_weierstrass_s0
+  method: Muon_ES
+  dataset: weierstrass
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_weierstrass_s1
+  method: Muon_ES
+  dataset: weierstrass
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_weierstrass_s2
+  method: Muon_ES
+  dataset: weierstrass
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: baseline_attractive_sector_s0
+  method: baseline_open_es
+  dataset: attractive_sector
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_attractive_sector_s1
+  method: baseline_open_es
+  dataset: attractive_sector
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_attractive_sector_s2
+  method: baseline_open_es
+  dataset: attractive_sector
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_bent_cigar_s0
+  method: baseline_open_es
+  dataset: bent_cigar
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_bent_cigar_s1
+  method: baseline_open_es
+  dataset: bent_cigar
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_bent_cigar_s2
+  method: baseline_open_es
+  dataset: bent_cigar
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_bueche_rastrigin_s0
+  method: baseline_open_es
+  dataset: bueche_rastrigin
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_bueche_rastrigin_s1
+  method: baseline_open_es
+  dataset: bueche_rastrigin
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_bueche_rastrigin_s2
+  method: baseline_open_es
+  dataset: bueche_rastrigin
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_different_powers_s0
+  method: baseline_open_es
+  dataset: different_powers
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_different_powers_s1
+  method: baseline_open_es
+  dataset: different_powers
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_different_powers_s2
+  method: baseline_open_es
+  dataset: different_powers
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_discus_s0
+  method: baseline_open_es
+  dataset: discus
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_discus_s1
+  method: baseline_open_es
+  dataset: discus
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_discus_s2
+  method: baseline_open_es
+  dataset: discus
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_ellipsoidal_s0
+  method: baseline_open_es
+  dataset: ellipsoidal
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_ellipsoidal_s1
+  method: baseline_open_es
+  dataset: ellipsoidal
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_ellipsoidal_s2
+  method: baseline_open_es
+  dataset: ellipsoidal
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_ellipsoidal_rotated_s0
+  method: baseline_open_es
+  dataset: ellipsoidal_rotated
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_ellipsoidal_rotated_s1
+  method: baseline_open_es
+  dataset: ellipsoidal_rotated
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_ellipsoidal_rotated_s2
+  method: baseline_open_es
+  dataset: ellipsoidal_rotated
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_gallagher_101_me_s0
+  method: baseline_open_es
+  dataset: gallagher_101_me
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_gallagher_101_me_s1
+  method: baseline_open_es
+  dataset: gallagher_101_me
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_gallagher_101_me_s2
+  method: baseline_open_es
+  dataset: gallagher_101_me
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_gallagher_21_hi_s0
+  method: baseline_open_es
+  dataset: gallagher_21_hi
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_gallagher_21_hi_s1
+  method: baseline_open_es
+  dataset: gallagher_21_hi
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_gallagher_21_hi_s2
+  method: baseline_open_es
+  dataset: gallagher_21_hi
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_griewank_rosenbrock_s0
+  method: baseline_open_es
+  dataset: griewank_rosenbrock
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_griewank_rosenbrock_s1
+  method: baseline_open_es
+  dataset: griewank_rosenbrock
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_griewank_rosenbrock_s2
+  method: baseline_open_es
+  dataset: griewank_rosenbrock
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_katsuura_s0
+  method: baseline_open_es
+  dataset: katsuura
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_katsuura_s1
+  method: baseline_open_es
+  dataset: katsuura
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_katsuura_s2
+  method: baseline_open_es
+  dataset: katsuura
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_linear_slope_s0
+  method: baseline_open_es
+  dataset: linear_slope
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_linear_slope_s1
+  method: baseline_open_es
+  dataset: linear_slope
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_linear_slope_s2
+  method: baseline_open_es
+  dataset: linear_slope
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_lunacek_s0
+  method: baseline_open_es
+  dataset: lunacek
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_lunacek_s1
+  method: baseline_open_es
+  dataset: lunacek
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_lunacek_s2
+  method: baseline_open_es
+  dataset: lunacek
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_rastrigin_s0
+  method: baseline_open_es
+  dataset: rastrigin
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_rastrigin_s1
+  method: baseline_open_es
+  dataset: rastrigin
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_rastrigin_s2
+  method: baseline_open_es
+  dataset: rastrigin
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_rastrigin_rotated_s0
+  method: baseline_open_es
+  dataset: rastrigin_rotated
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_rastrigin_rotated_s1
+  method: baseline_open_es
+  dataset: rastrigin_rotated
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_rastrigin_rotated_s2
+  method: baseline_open_es
+  dataset: rastrigin_rotated
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_rosenbrock_s0
+  method: baseline_open_es
+  dataset: rosenbrock
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_rosenbrock_s1
+  method: baseline_open_es
+  dataset: rosenbrock
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_rosenbrock_s2
+  method: baseline_open_es
+  dataset: rosenbrock
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_rosenbrock_rotated_s0
+  method: baseline_open_es
+  dataset: rosenbrock_rotated
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_rosenbrock_rotated_s1
+  method: baseline_open_es
+  dataset: rosenbrock_rotated
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_rosenbrock_rotated_s2
+  method: baseline_open_es
+  dataset: rosenbrock_rotated
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_schaffers_f7_s0
+  method: baseline_open_es
+  dataset: schaffers_f7
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_schaffers_f7_s1
+  method: baseline_open_es
+  dataset: schaffers_f7
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_schaffers_f7_s2
+  method: baseline_open_es
+  dataset: schaffers_f7
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_schaffers_f7_ill_cond_s0
+  method: baseline_open_es
+  dataset: schaffers_f7_ill_cond
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_schaffers_f7_ill_cond_s1
+  method: baseline_open_es
+  dataset: schaffers_f7_ill_cond
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_schaffers_f7_ill_cond_s2
+  method: baseline_open_es
+  dataset: schaffers_f7_ill_cond
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_schwefel_s0
+  method: baseline_open_es
+  dataset: schwefel
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_schwefel_s1
+  method: baseline_open_es
+  dataset: schwefel
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_schwefel_s2
+  method: baseline_open_es
+  dataset: schwefel
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_sharp_ridge_s0
+  method: baseline_open_es
+  dataset: sharp_ridge
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_sharp_ridge_s1
+  method: baseline_open_es
+  dataset: sharp_ridge
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_sharp_ridge_s2
+  method: baseline_open_es
+  dataset: sharp_ridge
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_sphere_s0
+  method: baseline_open_es
+  dataset: sphere
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_sphere_s1
+  method: baseline_open_es
+  dataset: sphere
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_sphere_s2
+  method: baseline_open_es
+  dataset: sphere
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_step_ellipsoidal_s0
+  method: baseline_open_es
+  dataset: step_ellipsoidal
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_step_ellipsoidal_s1
+  method: baseline_open_es
+  dataset: step_ellipsoidal
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_step_ellipsoidal_s2
+  method: baseline_open_es
+  dataset: step_ellipsoidal
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_weierstrass_s0
+  method: baseline_open_es
+  dataset: weierstrass
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_weierstrass_s1
+  method: baseline_open_es
+  dataset: weierstrass
+  condition: default
+  seed: 1
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_weierstrass_s2
+  method: baseline_open_es
+  dataset: weierstrass
+  condition: default
+  seed: 2
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline

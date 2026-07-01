@@ -127,3 +127,32 @@ def test_real_gfa_vs_lora_example_is_weak_not_overclaimed():
     c1 = next(c for c in report.claims if c.claim_id == "C1")
     assert c1.effective_status.value == "weak"       # not 'supported'
     assert not report.paper_ready
+
+
+def test_real_muon_bbob_example_supported_and_replay_beats_actual():
+    """Committed real BBOB case: C1 supported, and InsightFlow's replay order
+    reaches the verdict in fewer runs than the actual wall-clock order."""
+    import shutil
+    import tempfile
+    from pathlib import Path
+
+    from insightflow.importers import import_csv
+    from insightflow.ledger import Ledger
+    from insightflow.readiness import assess_readiness
+
+    src = Path(__file__).resolve().parent.parent / "examples" / "muon_bbob_real"
+    tmp = Path(tempfile.mkdtemp())
+    shutil.copytree(src / "configs", tmp / "configs")
+    ledger = Ledger(tmp)
+    ledger.initialize(force=True)
+    exps, results = import_csv(src / "runs.csv", "score")
+    ledger.merge_imported_runs(exps, results)
+    state = ledger.load_state()
+
+    report = assess_readiness(state)
+    c1 = next(c for c in report.claims if c.claim_id == "C1")
+    assert c1.effective_status.value == "supported"
+
+    result = replay(state)
+    assert result.ground_truth == {"C1": "supported"}
+    assert result.policy_comparison["insightflow"] < result.policy_comparison["actual"]

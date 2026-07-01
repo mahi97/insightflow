@@ -1,0 +1,9 @@
+claims:
+- id: C1
+  type: empirical
+  statement: Muon_ES reaches better final fitness than Open_ES across BBOB functions.
+  importance: high
+  target_metric: score
+  minimum_effect_size: 0.3
+  required_seeds: 1
+  reviewer_risk: 0.6
