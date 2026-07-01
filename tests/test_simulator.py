@@ -77,3 +77,10 @@ def test_ablation_policies_run():
     for pol in ("baseline_first", "ablate_reviewer_risk", "uncertainty_only"):
         assert pol in POLICIES
         run_policy(SCENARIOS["breadth"](0, "b"), pol, 30)  # must not crash
+
+
+def test_ablate_seed_policy_runs():
+    from insightflow.simulator import POLICIES, SCENARIOS
+    assert "ablate_seed_policy" in POLICIES
+    r = run_policy(SCENARIOS["noisy_seeds"](0, "n"), "ablate_seed_policy", 40)
+    assert r.runs_launched > 0  # must not crash

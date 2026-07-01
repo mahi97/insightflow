@@ -511,6 +511,7 @@ POLICIES: dict[str, PolicyFn] = {
     "ablate_reviewer_risk": _insightflow_with({"weight_reviewer_risk": 0.0}),
     "ablate_breadth_penalty": _insightflow_with({"weight_premature_replication_penalty": 0.0}),
     "ablate_cost": _insightflow_with({"lambda_cost": 0.0}),
+    "ablate_seed_policy": _insightflow_with({"disable_seed_policy": True}),
     "uncertainty_only": _insightflow_with({
         "weight_decision_value": 0.0, "weight_dependency": 0.0, "weight_reviewer_risk": 0.0,
         "weight_redundancy_penalty": 0.0, "weight_premature_replication_penalty": 0.0,

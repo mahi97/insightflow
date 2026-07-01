@@ -23,7 +23,7 @@ from .schemas import (
     PlanAction,
     State,
 )
-from .scoring import Scorer, compute_claim_evidence
+from .scoring import Scorer, SeedDecision, compute_claim_evidence
 from .seed_policy import decide_seed
 from .utils import now_iso, stable_hash
 
@@ -83,7 +83,11 @@ class Scheduler:
             )
 
             if observed and not exp.is_baseline:
-                decision = decide_seed(exp, evidence, self.policy)
+                if self.policy.disable_seed_policy:
+                    # Ablation: skip the breadth-vs-seed judgement; every seed counts.
+                    decision = SeedDecision(add=True, urgency=1.0, reason="seed policy disabled.")
+                else:
+                    decision = decide_seed(exp, evidence, self.policy)
                 action = scorer.score_add_seed(exp, decision)
             else:
                 action = scorer.score_launch(exp)

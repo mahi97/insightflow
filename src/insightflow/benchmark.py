@@ -40,7 +40,8 @@ def _pct_saved(insight: float | None, baseline: float | None) -> float | None:
 
 NAIVE = ["grid", "all_seeds_first", "all_tasks_first", "random", "cheap_first",
          "fastest_first", "baseline_first"]
-ABLATIONS = ["ablate_reviewer_risk", "ablate_breadth_penalty", "ablate_cost", "uncertainty_only"]
+ABLATIONS = ["ablate_reviewer_risk", "ablate_breadth_penalty", "ablate_cost",
+             "ablate_seed_policy", "uncertainty_only"]
 
 
 def run_scenarios(

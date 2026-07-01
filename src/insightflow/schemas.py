@@ -346,6 +346,7 @@ class Policy(BaseModel):
 
     # Seed policy
     prefer_breadth: bool = True
+    disable_seed_policy: bool = False  # ablation: treat every extra seed as fully warranted
 
     # Confidence model: "heuristic" (default, v0.1) or "bayes" (v0.2 calibrated
     # Normal-Normal hierarchical posterior + value-of-information scoring).
