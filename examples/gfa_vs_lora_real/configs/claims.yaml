@@ -1,0 +1,10 @@
+claims:
+- id: C1
+  type: empirical
+  statement: gfa improves accuracy over lora across GLUE tasks (cola, mnli, mrpc,
+    rte, sst2).
+  importance: high
+  target_metric: score
+  minimum_effect_size: 0.01
+  required_seeds: 1
+  reviewer_risk: 0.7

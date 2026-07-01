@@ -102,3 +102,28 @@ def test_replay_from_csv_example():
     assert result.ground_truth == {"C1": "supported"}
     assert result.policy_comparison["insightflow"] is not None
     assert result.policy_comparison["insightflow"] <= result.policy_comparison["actual"]
+
+
+def test_real_gfa_vs_lora_example_is_weak_not_overclaimed():
+    """The committed real-data case (447 GLUE runs, best-of-sweep) must reproduce
+    the honest 'weak' verdict — InsightFlow does not certify the +0.011 margin."""
+    import shutil
+    import tempfile
+    from pathlib import Path
+
+    from insightflow.importers import import_csv
+    from insightflow.ledger import Ledger
+    from insightflow.readiness import assess_readiness
+
+    src = Path(__file__).resolve().parent.parent / "examples" / "gfa_vs_lora_real"
+    tmp = Path(tempfile.mkdtemp())
+    shutil.copytree(src / "configs", tmp / "configs")
+    ledger = Ledger(tmp)
+    ledger.initialize(force=True)
+    exps, results = import_csv(src / "runs.csv", "score")
+    ledger.merge_imported_runs(exps, results)
+
+    report = assess_readiness(ledger.load_state())
+    c1 = next(c for c in report.claims if c.claim_id == "C1")
+    assert c1.effective_status.value == "weak"       # not 'supported'
+    assert not report.paper_ready

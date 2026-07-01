@@ -1,0 +1,11 @@
+id,created_at,score
+method_mrpc_s0,2026-04-17T16:21:15Z,0.81223
+baseline_rte_s0,2026-04-17T17:24:22Z,0.53069
+baseline_sst2_s0,2026-04-17T22:36:29Z,0.95413
+method_sst2_s0,2026-04-18T01:14:39Z,0.95757
+baseline_mrpc_s0,2026-04-18T02:28:22Z,0.82459
+baseline_cola_s0,2026-04-18T02:57:37Z,0.57852
+method_rte_s0,2026-04-18T03:33:49Z,0.56679
+method_cola_s0,2026-04-19T07:22:19Z,0.60391
+baseline_mnli_s0,2026-04-19T22:10:20Z,0.88782
+method_mnli_s0,2026-04-19T22:16:08Z,0.89149

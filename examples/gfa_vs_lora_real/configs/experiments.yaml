@@ -1,0 +1,111 @@
+experiments:
+- id: method_mrpc_s0
+  method: gfa
+  dataset: mrpc
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: baseline_rte_s0
+  method: baseline_lora
+  dataset: rte
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_sst2_s0
+  method: baseline_lora
+  dataset: sst2
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: method_sst2_s0
+  method: gfa
+  dataset: sst2
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: baseline_mrpc_s0
+  method: baseline_lora
+  dataset: mrpc
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: baseline_cola_s0
+  method: baseline_lora
+  dataset: cola
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: method_rte_s0
+  method: gfa
+  dataset: rte
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: method_cola_s0
+  method: gfa
+  dataset: cola
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
+- id: baseline_mnli_s0
+  method: baseline_lora
+  dataset: mnli
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - baseline
+- id: method_mnli_s0
+  method: gfa
+  dataset: mnli
+  condition: default
+  seed: 0
+  claim_links:
+  - C1
+  expected_cost: 1.0
+  expected_time: 1.0
+  tags:
+  - method
