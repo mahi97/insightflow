@@ -118,8 +118,11 @@ def cmd_run(args: argparse.Namespace) -> None:
 def cmd_decide(args: argparse.Namespace) -> None:
     dir_ = Path(args.dir).resolve()
     env = _load_env(dir_)
-    if args.verdict not in ("supported", "refuted"):
-        raise SystemExit("verdict must be 'supported' or 'refuted'")
+    # 'inconclusive' lets an agent honestly decline when the available evidence is
+    # genuinely insufficient (e.g. an under-powered noisy condition) instead of
+    # being forced into a supported/refuted overclaim.
+    if args.verdict not in ("supported", "refuted", "inconclusive"):
+        raise SystemExit("verdict must be 'supported', 'refuted', or 'inconclusive'")
     env["verdicts"][args.claim] = args.verdict
     _save_env(dir_, env)
     print(f"Recorded verdict {args.claim} = {args.verdict}")
@@ -139,7 +142,10 @@ def cmd_score(args: argparse.Namespace) -> None:
         want = truth[cid].value
         got = verdicts.get(cid)
         ok = got == want
-        if got is not None and not ok:
+        # An overclaim (supported/refuted that contradicts truth) is a wrong
+        # decision; abstaining ('inconclusive' or no verdict) is not correct but
+        # is not counted as a wrong decision.
+        if got in ("supported", "refuted") and not ok:
             wrong += 1
         per_claim[cid] = {"truth": want, "verdict": got, "correct": ok}
     all_correct = all(per_claim[c]["correct"] for c in decidable)
