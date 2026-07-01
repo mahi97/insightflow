@@ -156,6 +156,39 @@ def expected_voi_new_cell(
     return max(0.0, u0 - expected_u) / 0.25
 
 
+def two_step_voi_new_cell(
+    effects: list[float],
+    se2s: list[float],
+    total_conditions: int,
+    new_se2: float,
+    claim: Claim,
+    policy: Policy,
+) -> float:
+    """Opt-in **two-step** lookahead value of observing a new cell.
+
+        V2 = EVI(this cell) + gamma * E_y[ EVI(one more cell | posterior after y) ]
+
+    i.e. this cell is worth more if it also makes the *next* cell decisive. The
+    inner expectation is over the predictive of this cell's observation y, by the
+    same deterministic Gauss-Hermite quadrature. Still not a full multi-step
+    optimal plan (it looks ahead one extra informative observation for the same
+    claim), but it softens the myopia of the one-step EVI. Deterministic.
+    """
+    one_step = expected_voi_new_cell(effects, se2s, total_conditions, new_se2, claim, policy)
+    p0 = population_posterior(effects, se2s, total_conditions, claim, policy)
+    sigma_b2 = policy.between_condition_sd**2
+    pred_sd = math.sqrt(max(p0.var + sigma_b2 + max(new_se2, _EPS), _EPS))
+
+    expected_next = 0.0
+    for x, w in zip(_GH5_X, _GH5_W, strict=True):
+        y = p0.mean + _SQRT2 * pred_sd * x
+        expected_next += w * expected_voi_new_cell(
+            effects + [y], se2s + [new_se2], total_conditions, new_se2, claim, policy
+        )
+    expected_next /= _SQRT_PI
+    return one_step + policy.lookahead_gamma * expected_next
+
+
 def status_from_posterior(posterior: Posterior, policy: Policy) -> tuple[str, bool]:
     """Map a posterior to a claim status and a near-boundary flag."""
     t = policy.decision_prob_threshold

@@ -356,6 +356,10 @@ class Policy(BaseModel):
     # (so a single dataset cannot, by itself, establish cross-condition generality)
     within_seed_sd: float = 0.02  # default per-seed noise when it can't be estimated
     decision_prob_threshold: float = 0.9  # P(supported)/P(refuted) needed to decide
+    # Value-of-information lookahead (bayes mode only): 1 = myopic one-step (default),
+    # 2 = opt-in two-step (this cell + discounted best next cell). gamma discounts step 2.
+    lookahead_depth: int = 1  # only 1 or 2 are used
+    lookahead_gamma: float = 0.5
 
 
 class ResourcePool(BaseModel):

@@ -34,6 +34,7 @@ from .bayes import (
     expected_voi_new_cell,
     population_posterior,
     status_from_posterior,
+    two_step_voi_new_cell,
 )
 from .schemas import (
     ActionType,
@@ -446,13 +447,14 @@ class Scorer:
             ns[idx] = se2s[idx] * (n_m / (n_m + 1.0))
             after = population_posterior(effects, ns, ev.total_conditions, ev.claim, self.policy)
             return evoi(post.p_supported, after.p_supported)
+        voi = two_step_voi_new_cell if self.policy.lookahead_depth >= 2 else expected_voi_new_cell
         if exp.is_baseline and cell in ev.observed_conditions:
             n_m = max(1, ev.seeds_per_cell.get(cell, 1))
-            return expected_voi_new_cell(
+            return voi(
                 effects, se2s, ev.total_conditions, within**2 * (1.0 / n_m + 1.0),
                 ev.claim, self.policy,
             )
-        return 0.5 * expected_voi_new_cell(
+        return 0.5 * voi(
             effects, se2s, ev.total_conditions, within**2 * 2.0, ev.claim, self.policy
         )
 

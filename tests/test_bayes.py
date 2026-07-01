@@ -142,3 +142,18 @@ def test_calibration_ece_is_low_and_deterministic():
     r = measure_calibration(n=3000, seed=1)
     assert r.ece < 0.06  # well-calibrated against its own assumptions (small-N bound)
     assert measure_calibration(n=3000, seed=1).ece == r.ece  # deterministic
+
+
+def test_two_step_lookahead_is_at_least_one_step_and_scenarios_decide():
+    from insightflow.bayes import expected_voi_new_cell, two_step_voi_new_cell
+    claim = make_claim("C1", minimum_effect_size=0.02)
+    pol2 = Policy(confidence_model="bayes", lookahead_depth=2)
+    one = expected_voi_new_cell([], [], 4, SE2, claim, POLICY)
+    two = two_step_voi_new_cell([], [], 4, SE2, claim, pol2)
+    assert two >= one  # a second informative observation only adds value
+    assert two == two_step_voi_new_cell([], [], 4, SE2, claim, pol2)  # deterministic
+    # The opt-in two-step scheduler still decides scenarios correctly.
+    p = SCENARIOS["breadth"](0, "b")
+    p.policy = pol2
+    r = run_policy(p, "insightflow", 40)
+    assert r.correct and r.decided_step is not None

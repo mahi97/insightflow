@@ -29,6 +29,14 @@ guarantee**. What we can say is empirical: on the synthetic benchmark its
 worst-case runs-to-decision is 1.25x the oracle (see §3), which is good one-step
 behavior, not optimality.
 
+An **opt-in two-step lookahead** is available (`policy.lookahead_depth = 2`,
+[`bayes.py:two_step_voi_new_cell`](../src/insightflow/bayes.py)): it values an
+observation partly by whether it makes the *next* observation decisive
+(`V2 = EVI(this) + gamma * E_y[EVI(next | y)]`, same deterministic quadrature). It
+softens the myopia for the common "value of two cells" case but is still not a
+full multi-step optimal planner — a receding-horizon planner over the joint action
+set (with top-k pruning) remains future work.
+
 ## 2. Confidence is calibrated *under assumptions*; the default mode is a ranking score
 
 There are two scorers, and their epistemic status differs:
